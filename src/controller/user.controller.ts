@@ -3,13 +3,14 @@ import User from "../users/user.models"
 import bcrypt from "bcryptjs";
 import {createToken, createRefreshToken }from "../utils/jwt"
 import { error } from "console";
+import { id } from "zod/v4/locales";
 
 export {createUser, getUserById, getAllUser, deleteUser, updateUser};
 
 
 const createUser = async (req: Request, res: Response) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, phone, email, address } = req.body;
 
     // Kiểm tra username có tồn tại chưa
     const existingUser = await User.findOne({ username });
@@ -20,7 +21,10 @@ const createUser = async (req: Request, res: Response) => {
     // Tạo user mới — KHÔNG cần tạo id thủ công
     const newUser = new User({
       username,
-      password,    // _id sẽ được MongoDB tự sinh (kiểu ObjectId)
+      password,  
+      phone,
+      email,
+      address   // _id sẽ được MongoDB tự sinh (kiểu ObjectId)
     });
 
     await newUser.save();
@@ -42,7 +46,7 @@ const createUser = async (req: Request, res: Response) => {
  const getUserById = async (req : Request, res : Response) => {
     try {
         const id = req.params;
-        const user = await User.findOne({id:req.params.id});
+        const user = await User.findById(id);
         if (!user) return res.status(400).json({message : "user not found"});
         res.json(user);
     } catch (error) {
