@@ -4,49 +4,42 @@ import bcrypt from "bcryptjs";
 import {createToken, createRefreshToken }from "../utils/jwt"
 import { error } from "console";
 
+export {createUser, getUserById, getAllUser, deleteUser, updateUser};
 
-export const createUser = async (req: Request, res: Response) => {
+
+const createUser = async (req: Request, res: Response) => {
   try {
-    const { username, password, id } = req.body;
+    const { username, password } = req.body;
 
-    // Kiểm tra xem username đã tồn tại chưa
+    // Kiểm tra username có tồn tại chưa
     const existingUser = await User.findOne({ username });
     if (existingUser) {
       return res.status(400).json({ message: "Username đã tồn tại" });
     }
 
-    // // Tìm user cuối cùng để tạo id mới (tăng dần)
-    // const lastUser = await User.findOne().sort({ createdAt: -1 });
-
-    // let newId = "1";
-    // if (lastUser && lastUser.id) {
-    //   const lastId = parseInt(lastUser.id);
-    //   if (!isNaN(lastId)) {
-    //     newId = (lastId + 1).toString();
-    //   }
-    // }
-
-    // Tạo user mới với id riêng
+    // Tạo user mới — KHÔNG cần tạo id thủ công
     const newUser = new User({
       username,
-      password,
-      id,
+      password,    // _id sẽ được MongoDB tự sinh (kiểu ObjectId)
     });
 
     await newUser.save();
 
+    // 4️⃣ Phản hồi thành công
     res.status(201).json({
       message: "Tạo user thành công",
       user: newUser,
     });
+
   } catch (error) {
     console.error("Lỗi khi tạo user:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };
 
+
 // Tìm user bằng ID
-export const getUserById = async (req : Request, res : Response) => {
+ const getUserById = async (req : Request, res : Response) => {
     try {
         const id = req.params;
         const user = await User.findOne({id:req.params.id});
@@ -59,7 +52,7 @@ export const getUserById = async (req : Request, res : Response) => {
 
 
 //Lấy toàn bộ user
-export const getAllUser = async (req: Request, res: Response) => {
+ const getAllUser = async (req: Request, res: Response) => {
     try {
         const users = await User.find();
         res.json(users)
@@ -70,7 +63,7 @@ export const getAllUser = async (req: Request, res: Response) => {
 
 
 // Update user bằng id
-export const updateUser = async (req : Request, res : Response) => {
+ const updateUser = async (req : Request, res : Response) => {
     try {
         const {id} = req.params;
         const {username, password} = req.body;
@@ -92,7 +85,7 @@ export const updateUser = async (req : Request, res : Response) => {
 
 
 // Delete user bằng id
-export const deleteUser = async (req: Request, res: Response) => {
+ const deleteUser = async (req: Request, res: Response) => {
     try {
         const {id} = req.params;
         await User.findOneAndDelete({id});
@@ -101,7 +94,7 @@ export const deleteUser = async (req: Request, res: Response) => {
         res.status(400).json({message : " Error deleting user"});
     }
 };
-// export const login = async (req : Request, res : Response) => {
+//  const login = async (req : Request, res : Response) => {
 
 //     const {username, password} = req.body;
 
