@@ -1,11 +1,25 @@
 import type { Request, Response } from "express";
 import User from "../users/user.models"
 import bcrypt from "bcryptjs";
-import {createToken, createRefreshToken }from "../utils/jwt"
+import {login, createToken, createRefreshToken }from "../utils/jwt"
 import { error } from "console";
 import { id } from "zod/v4/locales";
 
-export {createUser, getUserById, getAllUser, deleteUser, updateUser};
+export {createUser, getUserById, getAllUser, deleteUser, updateUser, login};
+
+const login = async (req : Request, res : Response) => {
+    try {
+        const {username, password} = req.body;
+        const user = await User.find({username, password});
+
+        if (!user) {
+            return res.status(404).json({message : "Sai username hoặc password"})
+        }
+        res.status(200).json({message : "Đăng nhập thành công"})
+    } catch (err) {
+        res.status(500).json({message : "Lỗi server", err});
+    }
+};
 
 
 const createUser = async (req: Request, res: Response) => {
@@ -18,13 +32,13 @@ const createUser = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Username đã tồn tại" });
     }
 
-    // Tạo user mới — KHÔNG cần tạo id thủ công
+    // Tạo user mới — KHÔNG cần tạo id thủ công -> Object_id
     const newUser = new User({
       username,
       password,  
       phone,
       email,
-      address   // _id sẽ được MongoDB tự sinh (kiểu ObjectId)
+      address
     });
 
     await newUser.save();
@@ -96,22 +110,4 @@ const createUser = async (req: Request, res: Response) => {
         res.status(400).json({message : " Error deleting user"});
     }
 };
-//  const login = async (req : Request, res : Response) => {
-
-//     const {username, password} = req.body;
-
-//     // Tìm User trong DATABASE 
-//     const user = await User.findOne({username});
-//     if(!user) return res.status(404).json({message : " User not found"});
-
-//     // So sánh mật khẩu nhập với mật khẩu hash trong DB
-//     const isMatch = await bcrypt.compare(password, user.password);
-//     if (!isMatch)
-//         return res.status(401).json({ message: "Wrong password" });
-
-//     // Tạo token để đăng nhập
-//     const token = createToken(user.id);
-//     const refreshToken = createRefreshToken(user.id);
-//     res.json({message : "Login successful", token, refreshToken});
-// }
 

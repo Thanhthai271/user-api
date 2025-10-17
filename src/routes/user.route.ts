@@ -1,9 +1,14 @@
 import express from "express"
-import { createUser, getAllUser, getUserById, deleteUser, updateUser} from "../controller/user.controller"
+import { login, createUser, getAllUser, getUserById, deleteUser, updateUser} from "../controller/user.controller"
 import { authMiddLeware } from "../middleware/auth.middleware"
+import { connectDB } from "../config/db";
+import userModels from "../users/user.models";
 
 const router =  express.Router();
 
+
+
+router.post("/", login);
 router.post("/", createUser);
 router.get("/", getAllUser);
 router.get("/:id", getUserById);
