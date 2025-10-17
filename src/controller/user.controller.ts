@@ -28,8 +28,6 @@ const createUser = async (req: Request, res: Response) => {
     });
 
     await newUser.save();
-
-    // 4️⃣ Phản hồi thành công
     res.status(201).json({
       message: "Tạo user thành công",
       user: newUser,
