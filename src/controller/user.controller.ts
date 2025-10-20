@@ -18,8 +18,9 @@ const login = async (req : Request, res : Response) => {
         if (!user) {
             return res.status(404).json({message : "Sai username hoặc password"})
         }
-        res.status(200).json({message : "Đăng nhập thành công"})
+        // res.status(200).json({message : "Đăng nhập thành công"})
 
+        // Lấy Token 
         const header = {
         alg : "hmac256", 
         typ : "JWT",
@@ -37,8 +38,10 @@ const login = async (req : Request, res : Response) => {
 
     const hmac = crypto.createHmac("sha256", secretKey);
     const signature = hmac.update(tokenData).digest("base64url");
-        res.json({
-            token : `${tokenData}.${signature}` 
+        res.status(200).json({
+            message : "Đăng nhập thành công",
+            token : `${tokenData}.${signature}`,
+            authorize : true
         });
 
     } catch (err) {
@@ -47,6 +50,7 @@ const login = async (req : Request, res : Response) => {
 };
 
 
+// Tạo user
 const createUser = async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
@@ -85,7 +89,7 @@ const createUser = async (req: Request, res: Response) => {
             const {username, email} = req.body;
             if(!username || !email){
                 res.json({message : "User not found"})
-            }
+            } 
             const user1 = await User.findOne({$or: [{username}, {email}]})
             res.json(user1);
         }else{
