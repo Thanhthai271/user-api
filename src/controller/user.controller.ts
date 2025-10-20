@@ -76,18 +76,25 @@ const createUser = async (req: Request, res: Response) => {
 };
 
 
-// Tìm user bằng ID
- const getUserById = async (req : Request, res : Response) => {
-    try {
+// Tìm user 
+ const getUser = async (req : Request, res : Response) => {
+    try{
         const {id} = req.params;
-        // const {username, email} = req.body;
         const user = await User.findById(id);
-        if (!user) return res.status(400).json({message : "user not found"});
-        res.json(user);
-    } catch (error) {
-        res.status(500).json({message : " Error fetching user", error})
+        if(!user) {
+            const {username, email} = req.body;
+            if(!username || !email){
+                res.json({message : "User not found"})
+            }
+            const user1 = await User.findOne({$or: [{username}, {email}]})
+            res.json(user1);
+        }else{
+            res.json(user);
+        }
+    } catch(err) {
+        res.status(500).json({message : "Error fetching user", err})
     }
-};
+ };
 
 
 //Lấy toàn bộ user
@@ -134,5 +141,5 @@ const createUser = async (req: Request, res: Response) => {
     }
 };
 
-export {createUser, getUserById, getAllUser, deleteUser, updateUser, login};
+export {createUser, getUser, getAllUser, deleteUser, updateUser, login};
 
