@@ -1,46 +1,37 @@
 import type { Request, Response } from "express";
 import User from "../users/user.models"
-import bcrypt from "bcryptjs";
-import { createToken, createRefreshToken }from "../utils/jwt"
 import { error } from "console";
-import { id } from "zod/v4/locales";
-import userModels from "../users/user.models";
 import crypto from "crypto";
-import { jwt } from "zod";
+import jwt from "jsonwebtoken"
+import { SECRET_KEY } from "../utils/jwt";
+
 
 
 const login = async (req : Request, res : Response) => {
     try {
-        const secretKey = "Etz/OLteop3NC42sh493AFQ7sYRmzcobRMlcBXoUhs+VrzJod4RVxARp5xQxB+k36se0pu7ZaXvSjRh8mYtUpZWhL/sWMNFIUMGvkzl9uWGUVJOtcykaYhLQhrkRe7IqD0Bjde32YoDbISZlNi83r4/8KrB1RdEOFXnZYUzebRhUnHXXQOFNNlXfymSsW8N4WlIqbng8fc7d4hNc1tadVtvLCU2+avZix73CnS0iJDQjonzDfeahNuqP6/qcE88fRH5WywWymp5dzEk+To+NMW2JMw0EKs16NDM4UsDXHVAdS4hmxDja8/Q6mqDbkyOkxYqKHXritKQzzFqZshs7Cg==";
         const {username, password} = req.body;
-        const user = await User.find({username, password});
+        const user = await User.findOne({username, password});
 
         if (!user) {
             return res.status(404).json({message : "Sai username hoặc password"})
         }
-        // res.status(200).json({message : "Đăng nhập thành công"})
 
         // Lấy Token 
-        const header = {
-        alg : "hmac256", 
-        typ : "JWT",
-    };
+        const payload = {
+            id : user._id,
+            user : user.username,
+            email : user.email
+        }
 
-    const payload = {
-        sub : user,
-        exp : Date.now() + 3600000,
-    };
+        const accesToken = jwt.sign(
+            payload,
+            SECRET_KEY as string,
+            {expiresIn: "1d" }
+        )
 
-    const encodedHeader = btoa(JSON.stringify(header));
-    const encodedPayload = btoa(JSON.stringify(payload));
-
-    const tokenData = `${encodedHeader}.${encodedPayload}`;
-
-    const hmac = crypto.createHmac("sha256", secretKey);
-    const signature = hmac.update(tokenData).digest("base64url");
         res.status(200).json({
             message : "Đăng nhập thành công",
-            token : `${tokenData}.${signature}`,
+            token : accesToken,
             authorize : true
         });
 
@@ -87,14 +78,17 @@ const createUser = async (req: Request, res: Response) => {
         const user = await User.findById(id);
         if(!user) {
             const {username, email} = req.body;
-            if(!username || !email){
+            if(!username && !email){
                 res.json({message : "User not found"})
-            } 
-            const user1 = await User.findOne({$or: [{username}, {email}]})
+            } else {
+                const user1 = await User.findOne({$or: [{username}, {email}]})
             res.json(user1);
+            }
+            
         }else{
             res.json(user);
         }
+
     } catch(err) {
         res.status(500).json({message : "Error fetching user", err})
     }

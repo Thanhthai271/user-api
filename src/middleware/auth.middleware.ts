@@ -1,20 +1,27 @@
 import { error } from "console";
-import type { Request,Response,NextFunction } from "express";
-import jwt from "jsonwebtoken"
+import type { NextFunction, Request, Response } from "express";
+import jwt from "jsonwebtoken";
+import {SECRET_KEY} from "../utils/jwt";
+ 
 
-const SECRET = "MY_SECRET_KEY";
+const authMiddleware = (req : Request, res : Response, next : NextFunction) => {
+    
+    console.log(">>> headers:", req.headers); // Thêm dòng này
 
-export const authMiddLeware = (req: Request, res: Response, next: NextFunction) => {
-    const token = req.headers.authorization?.split(" ")[1];
+    if(req.headers && req.headers.authorization){
+        //lấy token
+        const token = req.headers.authorization.split(' ')[1];
+        //xác thực token
+        try {
+            const decoded = jwt.verify(token as string, SECRET_KEY as string)
+            next();
+        }catch(err){
+            res.status(401).json({message: "Thiếu hoặc sai định dạng token"})
+        }
+    }else{
+        res.status(401).json({message: "Undefind"})
+    }
 
-    if (!token) return res.status(401).json({message: "No token provided"});
+}
 
-    try {
-        const decoded = jwt.verify(token, SECRET);
-        (req as any).user = decoded;
-        next();
-    } catch {
-        return res.status(403).json({message : "Invalid token"});
-    } 
-};
-
+export {authMiddleware}; 
