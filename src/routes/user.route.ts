@@ -6,13 +6,6 @@ const router =  express.Router();
 
 router.post("/login", login);
 
-// console.log(">>> Router user loaded"); // kiểm tra router có mount không
-
-// router.use((req, res, next) => {
-//   console.log(">>> Router matched:", req.path);
-//   next();
-// });
-
 router.use(authMiddleware);
 
 
@@ -20,7 +13,7 @@ router.post("/create", createUser);
 router.get("/", getAllUser);    
 router.get("/search/:id", getUser);
 router.put("/update/:id", updateUser);
-router.delete("/delete/:username", deleteUser);
+router.delete("/delete/:id", deleteUser);
 
 export default router;
 
