@@ -12,11 +12,23 @@ async function login() {
         });
 
         const data = await res.json();
+
+        if(!res.ok){
+            console.log(data)
+            alert("Sai username hoặc password")
+            return;
+        }   
+        
         console.log(data)
-        alert("Đăng nhập thành công")
+        alert("Đăng nhập thành công");
+
+        localStorage.setItem("token", data.token);
+
+        // window.location.href = "fb.com";
+
     }catch(err){
         console.error(err);
-        alert("Lỗi đăng nhập");
+        alert("Lỗi đăng nhập"); 
     }
 }
 

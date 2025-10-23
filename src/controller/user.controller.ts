@@ -75,6 +75,9 @@ const getUser = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const user = await User.findById(id);
+        if (!Types.ObjectId.isValid(id as string)) {
+            res.status(400).json({ message: "Bad request" })
+        }
         if (!user) {
             const { username, email } = req.body;
             if (!username && !email) {
@@ -138,16 +141,34 @@ const updateUser = async (req: Request, res: Response) => {
 const deleteUser = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        if (!Types.ObjectId.isValid(id as string)) {
-            res.status(400).json({ message: "Bad Request" })
-        } else {
-            await User.findOneAndDelete({ _id: new Types.ObjectId(id) });
-            res.json({ message: " User delete success " });
+        const { username, email } = req.body || {};
+
+        if (id) {
+            if (!Types.ObjectId.isValid(id as string)) {
+                return res.status(400).json({ message: "Bad Request, try by username or email" })
+            }
+            const user = await User.findOneAndDelete({ _id: new Types.ObjectId(id) });
+            if (!user) {
+                return res.json({ message: "User not found, try by username or email" });
+            }
+            return res.json({ message: " User delete success " });
         }
+
+        if (!username && !email) {
+            return res.json({ message: "Missing username or email" })
+        }
+
+        if (username || email) {
+            await User.findOneAndDelete({ $or: [{ username }, { email }] })
+            return res.json({ message: "User delete success " });
+        }
+
     } catch (error) {
-        res.status(400).json({ message: " Error deleting user" });
+        console.error("❌ Delete error:", error);
+        res.status(500).json({ message: " Error deleting user" });
     }
 };
+
 
 export { createUser, getUser, getAllUser, deleteUser, updateUser, login };
 
