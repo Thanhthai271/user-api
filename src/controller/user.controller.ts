@@ -1,7 +1,5 @@
 import type { Request, Response } from "express";
 import User from "../users/user.models"
-import { error } from "console";
-import crypto from "crypto";
 import jwt from "jsonwebtoken"
 import { SECRET_KEY } from "../utils/jwt";
 import { Types } from "mongoose";
@@ -107,7 +105,7 @@ const getAllUser = async (req: Request, res: Response) => {
 };
 
 
-// Update user bằng id
+// Update user 
 const updateUser = async (req: Request, res: Response) => {
     try {
 
@@ -136,7 +134,7 @@ const updateUser = async (req: Request, res: Response) => {
 };
 
 
-// Delete user bằng id
+// Delete user 
 const deleteUser = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;

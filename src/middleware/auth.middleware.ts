@@ -6,7 +6,7 @@ import {SECRET_KEY} from "../utils/jwt";
 
 const authMiddleware = (req : Request, res : Response, next : NextFunction) => {
     
-    console.log(">>> headers:", req.headers); // Thêm dòng này
+    // console.log(">>> headers:", req.headers); // Thêm dòng này
 
     if(req.headers && req.headers.authorization){
         //lấy token

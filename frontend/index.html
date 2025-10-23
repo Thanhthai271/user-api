@@ -11,58 +11,17 @@
 <body>
     <div id="wrapper">
         <form action="" id="form-login">
-            <h1 class="form-heading">Form đăng nhập</h1>
+            <h1 class="form-heading">Đăng nhập</h1>
             <div class="form-group">
-                <input type="text" class="form-input" placeholder="Tên đăng nhập">
+                <input type="text" class="form-input" id="username" placeholder="Tên đăng nhập">
             </div>
             <div class="form-group">
-                <input type="password" class="form-input" placeholder="Mật khẩu">
+                <input type="password" class="form-input" id="password" placeholder="Mật khẩu">
             </div>
-            <input type="submit" value="Đăng nhập" class="form-submit">
+            <input type="button" value="Đăng nhập" class="form-submit" id="dangnhapBtn">
         </form>
     </div>
 
-    <script>
-    document.getElementById("form-login").addEventListener("submit", async (e) => {
-      e.preventDefault(); // không reload trang
-
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value.trim();
-
-      if (!username || !password) {
-        alert("Vui lòng nhập đủ tên đăng nhập và mật khẩu!");
-        return;
-      }
-
-      try {
-        const res = await fetch("http://localhost:5000/api/users/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ username, password }),
-        });
-
-        const data = await res.json();
-
-        if (res.ok) {
-          alert("✅ Đăng nhập thành công!");
-          console.log("Kết quả từ API:", data);
-
-          // 👉 Nếu API trả về token, có thể lưu:
-          localStorage.setItem("token", data.token);
-
-          // 👉 Sau đó chuyển trang (nếu muốn)
-          window.location.href = "fb.com";
-        } else {
-          alert("❌ " + (data.message || "Sai thông tin đăng nhập!"));
-        }
-      } catch (error) {
-        console.error("Lỗi kết nối:", error);
-        alert("🚫 Không thể kết nối đến server!");
-      }
-    });
-  </script>
-
+    <script type="module" src="main.js"></script>
 </body>
 </html>
