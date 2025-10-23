@@ -134,7 +134,7 @@ const updateUser = async (req: Request, res: Response) => {
         }
 
         const updateUser = await User.findOneAndUpdate(
-            { _id: new Types.ObjectId(id) },
+            { $or: [{ username }, { email }] },
             { username, password, phone, email, address },
             { new: true, upsert: false }
         );
