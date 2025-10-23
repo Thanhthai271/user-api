@@ -5,11 +5,10 @@ import { authMiddleware } from "../middleware/auth.middleware"
 const router =  express.Router();
 
 router.post("/login", login);
+router.post("/create", createUser);
 
 router.use(authMiddleware);
 
-
-router.post("/create", createUser);
 router.get("/", getAllUser);    
 router.get("/search/:id", getUser);
 router.put("/update/:id", updateUser);
