@@ -74,22 +74,24 @@ const createUser = async (req: Request, res: Response) => {
 const getUser = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const user = await User.findById(id);
-        if (!Types.ObjectId.isValid(id as string)) {
-            res.status(400).json({ message: "Bad request" })
-        }
-        if (!user) {
-            const { username, email } = req.body;
-            if (!username && !email) {
-                res.json({ message: "User not found" })
-            } else {
-                const user1 = await User.findOne({ $or: [{ username }, { email }] })
-                res.json(user1);
-            }
+        const { username, password } = req.body || {} ;
 
-        } else {
-            res.json(user);
+        if (id) {
+            if (!Types.ObjectId.isValid(id as string)) {
+                res.status(400).json({ message: "Bad request, try by username or email" })
+            }
+            const getUserById = await User.findById(new Types.ObjectId(id as string))
+            if (!getUserById) {
+                return res.status(404).json({ message: "User not found, try by username or email" });
+            }
+            return res.json(getUserById);
         }
+
+        const getUser = await User.findOne({ $or: [{ username }, { password }] });
+        if (!getUser) {
+            return res.status(404).json({ message: "User not found, try by id" });
+        }
+        return res.json(getUser)
 
     } catch (err) {
         res.status(500).json({ message: "Error fetching user", err })
@@ -113,25 +115,37 @@ const updateUser = async (req: Request, res: Response) => {
     try {
 
         const { id } = req.params;
-        const { username, password, phone, email, address } = req.body;
+        const { username, password, phone, email, address } = req.body || {};
 
-        if (!Types.ObjectId.isValid(id as string)) {
-            res.status(400).json({ message: "Bad request" });
-        } else {
-            const updateUser = await User.findByIdAndUpdate(
+        if (id) {
+            if (!Types.ObjectId.isValid(id as string)) {
+                res.status(400).json({ message: "Bad request, try again" })
+            }
+            const updateUserbyid = await User.findByIdAndUpdate(
+                { _id: new Types.ObjectId(id) },
+                { username, password, phone, email, address },
+                { new: true, upsert: false }
+            );
 
-                // Trả về dữ liệu mới 
-                { _id: new Types.ObjectId(id) },  // hoặc new mongoose.Types.ObjectId(id) -> điều kiện tìm kiếm 
-                { username, password, phone, email, address }, // dữ liệu trả về
-                { new: true, upsert: false }); //các tùy chọn
-
-            if (!updateUser)
-                return res.status(404).json({ message: " Error updating user " });
-
-            res.status(200).json(updateUser);
+            if (!updateUserbyid) {
+                return res.status(404).json({ message: "User not found, try by username or email" });
+            }
+            return res.json(updateUserbyid);
         }
 
+        const updateUser = await User.findOneAndUpdate(
+            { _id: new Types.ObjectId(id) },
+            { username, password, phone, email, address },
+            { new: true, upsert: false }
+        );
+
+        if (!updateUser) {
+            return res.status(404).json({ message: "User not found, try by id" });
+        }
+        return res.json(updateUser);
+
     } catch (error) {
+        console.error("❌ update error:", error);
         res.status(500).json({ message: "Server error", error });
     }
 };
