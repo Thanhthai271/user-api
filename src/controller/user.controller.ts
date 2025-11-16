@@ -1,8 +1,9 @@
 import type { Request, Response } from "express";
 import User from "../users/user.models"
 import jwt from "jsonwebtoken"
-import { SECRET_KEY } from "../utils/jwt";
+import { SECRET_KEY, SECRET_KEY_REFRESH } from "../utils/jwt";
 import { Types } from "mongoose";
+import { skip } from "node:test";
 
 
 
@@ -25,12 +26,19 @@ const login = async (req: Request, res: Response) => {
         const accesToken = jwt.sign(
             payload,
             SECRET_KEY as string,
-            { expiresIn: "1d" }
+            { expiresIn: "1h" }
+        )
+
+        const refreshToken = jwt.sign(
+            payload,
+            SECRET_KEY_REFRESH as string,
+            { expiresIn: "2d" }
         )
 
         res.status(200).json({
             message: "Đăng nhập thành công",
-            token: accesToken,
+            accesToken: accesToken,
+            refreshToken: refreshToken,
             authorize: true
         });
 
@@ -74,7 +82,7 @@ const createUser = async (req: Request, res: Response) => {
 const getUser = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const { username, password } = req.body || {} ;
+        const { username, password } = req.body || {};
 
         if (id) {
             if (!Types.ObjectId.isValid(id as string)) {
@@ -102,8 +110,31 @@ const getUser = async (req: Request, res: Response) => {
 //Lấy toàn bộ user
 const getAllUser = async (req: Request, res: Response) => {
     try {
-        const users = await User.find();
-        res.json(users)
+        const page = parseInt ( req.query.page as string )  ||1 ;
+        const limit = parseInt ( req.query.limit as string )  || 10;
+
+        const totalUsers = await User.countDocuments();  // * Lấy tổng số lượng bản ghi (quan trọng cho thông tin phân trang)
+
+        const skip = ( page -1 ) * limit;
+
+        const users = await User.find()
+            .skip(skip)
+            .limit(limit)
+
+    // Tính toán thông tin phân trang (metadata)
+        const totalPages = Math.ceil(totalUsers / limit);
+
+        res.json({
+            users,
+            pagination: {
+                totalUsers,
+                limit,
+                currentPage : page,
+                totalPages,
+                hasNextPage : page < totalPages,
+                hasPreviousPage: page > 1 
+            }
+        })
     } catch (error) {
         res.status(500).json({ message: " Error fetching users ", error });
     }
