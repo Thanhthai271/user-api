@@ -1,0 +1,36 @@
+import {Response, Request, NextFunction} from 'express'
+import jwt from 'jsonwebtoken'
+
+// Hàm tương tác vơi DB
+const REFRESH_TOKEN_DB = new Set<string>();
+
+const isRefreshTokenValidInDB = async (token:string): Promise<boolean> => {
+    return REFRESH_TOKEN_DB.has(token);
+}
+
+const revokeTokenInDB = async (token:string) => {
+    REFRESH_TOKEN_DB.add(token);
+}
+
+const saveNewTokenInDB = async (token:string, username: string) => {
+    REFRESH_TOKEN_DB.delete(token);
+}
+
+
+const authMiddRefresh = (req:Request, Res: Response, next: NextFunction) => {
+    const refreshToken = req.cookies.refreshToken;
+    if (!req.cookies.refreshToken){
+        Res.status(401).json({message: " Thiếu hoặc chưa có refresh token"})
+    }
+    next();
+    try {
+        const decodedRefresh = jwt.verify(refreshToken as string, SECRET_KEY_REFRESH as string)
+        if(!decodedRefresh) {
+            Res.status(401).json({message: "thiếu hoặc sai token"})
+        }
+    } catch(er) {
+        Res.status(401).json({message: "Undefind"})
+    }
+}
+
+export { isRefreshTokenValidInDB, revokeTokenInDB, saveNewTokenInDB}

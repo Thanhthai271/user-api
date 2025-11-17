@@ -29,20 +29,21 @@ const login = async (req: Request, res: Response) => {
             { expiresIn: "1h" }
         )
 
-        const refreshToken = jwt.sign(
-            payload,
-            SECRET_KEY_REFRESH as string,
-            { expiresIn: "2d" }
-        )
+        // const refreshToken = jwt.sign(
+        //     payload,
+        //     SECRET_KEY_REFRESH as string,
+        //     { expiresIn: "2d" }
+        // )
 
         res.status(200).json({
             message: "Đăng nhập thành công",
             accesToken: accesToken,
-            refreshToken: refreshToken,
+            // refreshToken: refreshToken,  
             authorize: true
         });
 
     } catch (err) {
+        console.error("🔥 Login error:", err);
         res.status(500).json({ message: "Lỗi server", err });
     }
 };
@@ -110,18 +111,22 @@ const getUser = async (req: Request, res: Response) => {
 //Lấy toàn bộ user
 const getAllUser = async (req: Request, res: Response) => {
     try {
-        const page = parseInt ( req.query.page as string )  ||1 ;
-        const limit = parseInt ( req.query.limit as string )  || 10;
+        const limitDefault = 10;
+
+        const limit = parseInt(req.query.limit as string) || limitDefault;
+        const offset = parseInt(req.query.offset as string) || 0;
+        const page = parseInt(req.query.page as string) || Math.floor(offset / limit) + 1;
 
         const totalUsers = await User.countDocuments();  // * Lấy tổng số lượng bản ghi (quan trọng cho thông tin phân trang)
 
-        const skip = ( page -1 ) * limit;
+        const skip = offset || (page - 1) * limit;
 
         const users = await User.find()
+            .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
 
-    // Tính toán thông tin phân trang (metadata)
+        // Tính toán thông tin phân trang (metadata)
         const totalPages = Math.ceil(totalUsers / limit);
 
         res.json({
@@ -129,10 +134,9 @@ const getAllUser = async (req: Request, res: Response) => {
             pagination: {
                 totalUsers,
                 limit,
-                currentPage : page,
+                offset: offset,
+                currentPage: page,
                 totalPages,
-                hasNextPage : page < totalPages,
-                hasPreviousPage: page > 1 
             }
         })
     } catch (error) {
