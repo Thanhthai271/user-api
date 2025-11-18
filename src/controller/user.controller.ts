@@ -1,10 +1,9 @@
 import type { Request, Response } from "express";
-import {User} from "../users/user.models"
+import { User } from "../users/user.models"
 import jwt from "jsonwebtoken"
 import { SECRET_KEY, SECRET_KEY_REFRESH } from "../utils/jwt";
 import { Types } from "mongoose";
 import { skip } from "node:test";
-
 
 
 const login = async (req: Request, res: Response) => {
@@ -32,17 +31,17 @@ const login = async (req: Request, res: Response) => {
         const refreshToken = jwt.sign(
             payload,
             SECRET_KEY_REFRESH as string,
-            { expiresIn: "7d"}
+            { expiresIn: "7d" }
         )
 
         await User.updateOne(
-            {_id: user._id},
-            {$push: {refreshTokens: refreshToken}}
+            { _id: user._id },
+            { $push: { refreshTokens: refreshToken } }
         )
 
         res.status(200).json({
             message: "Đăng nhập thành công",
-            accesToken: accesToken, 
+            accesToken: accesToken,
             authorize: true
         });
 
@@ -51,21 +50,6 @@ const login = async (req: Request, res: Response) => {
         res.status(500).json({ message: "Lỗi server", err });
     }
 };
-
-// Kiểm tra refresh token khi cấp access token mới (lấy từ cookie, kiểm tra với MongoDB, rồi cấp token mới)
-const refreshToken = async (req: Request, res: Response) => {
-    const {refreshToken} = req.cookies;
-    if(!refreshToken){
-        res.status(401).json({message: "Không có refreshToken"})
-    }
-
-    const user = await User.findOne({refreshTokens: refreshToken})
-    if(!user){
-        res.status(403).json({message: "Không có người dùng"})
-    }
-
-    
-}
 
 // Tạo user
 const createUser = async (req: Request, res: Response) => {
@@ -91,7 +75,7 @@ const createUser = async (req: Request, res: Response) => {
         });
 
     } catch (error) {
-        console.error("Lỗi khi tạo user:", error);
+        console.error("❌ register error", err);
         res.status(500).json({ message: "Server error", error });
     }
 };
@@ -121,6 +105,7 @@ const getUser = async (req: Request, res: Response) => {
         return res.json(getUser)
 
     } catch (err) {
+        console.error("❌ find user error")
         res.status(500).json({ message: "Error fetching user", err })
     }
 };
@@ -158,6 +143,7 @@ const getAllUser = async (req: Request, res: Response) => {
             }
         })
     } catch (error) {
+        console.error("❌ getAllUsers error")
         res.status(500).json({ message: " Error fetching users ", error });
     }
 };
