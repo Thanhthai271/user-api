@@ -54,7 +54,7 @@ const login = async (req: Request, res: Response) => {
 // Tạo user
 const createUser = async (req: Request, res: Response) => {
     try {
-        const { username, password } = req.body;
+        const { username, password, room, email } = req.body;
 
         // Kiểm tra username có tồn tại chưa
         const existingUser = await User.findOne({ username });
@@ -65,7 +65,9 @@ const createUser = async (req: Request, res: Response) => {
         // Tạo user mới — KHÔNG cần tạo id thủ công -> Object_id
         const newUser = new User({
             username,
-            password
+            password,
+            email,
+            room
         });
 
         await newUser.save();
@@ -74,9 +76,9 @@ const createUser = async (req: Request, res: Response) => {
             user: newUser,
         });
 
-    } catch (error) {
+    } catch (err) {
         console.error("❌ register error", err);
-        res.status(500).json({ message: "Server error", error });
+        res.status(500).json({ message: "Server error", err });
     }
 };
 
@@ -105,7 +107,7 @@ const getUser = async (req: Request, res: Response) => {
         return res.json(getUser)
 
     } catch (err) {
-        console.error("❌ find user error")
+        console.error("❌ find user error", err)
         res.status(500).json({ message: "Error fetching user", err })
     }
 };
@@ -142,9 +144,9 @@ const getAllUser = async (req: Request, res: Response) => {
                 totalPages,
             }
         })
-    } catch (error) {
-        console.error("❌ getAllUsers error")
-        res.status(500).json({ message: " Error fetching users ", error });
+    } catch (err) {
+        console.error("❌ getAllUsers error", err)
+        res.status(500).json({ message: " Error fetching users ", err });
     }
 };
 
@@ -154,15 +156,15 @@ const updateUser = async (req: Request, res: Response) => {
     try {
 
         const { id } = req.params;
-        const { username, password, phone, email, address } = req.body || {};
+        const { username, password, phone, email, address, room } = req.body;
 
-        if (id) {
+        // if (!id) {
             if (!Types.ObjectId.isValid(id as string)) {
                 res.status(400).json({ message: "Bad request, try again" })
             }
             const updateUserbyid = await User.findByIdAndUpdate(
                 { _id: new Types.ObjectId(id) },
-                { username, password, phone, email, address },
+                { username, password, phone, email, address, room },
                 { new: true, upsert: false }
             );
 
@@ -170,22 +172,22 @@ const updateUser = async (req: Request, res: Response) => {
                 return res.status(404).json({ message: "User not found, try by username or email" });
             }
             return res.json(updateUserbyid);
-        }
+        // }
 
-        const updateUser = await User.findOneAndUpdate(
-            { $or: [{ username }, { email }] },
-            { username, password, phone, email, address },
-            { new: true, upsert: false }
-        );
+        // const updateUser = await User.findOneAndUpdate(
+        //     { $or: [{ username }, { email }] },
+        //     { username, email, password, phone, address, room },
+        //     { new: true, upsert: false }
+        // );
 
-        if (!updateUser) {
-            return res.status(404).json({ message: "User not found, try by id" });
-        }
-        return res.json(updateUser);
+        // if (!updateUser) {
+        //     return res.status(404).json({ message: "User not found, try by id" });
+        // }
+        // return res.json(updateUser);
 
-    } catch (error) {
-        console.error("❌ update error:", error);
-        res.status(500).json({ message: "Server error", error });
+    } catch (err) {
+        console.error("❌ update error:", err);
+        res.status(500).json({ message: "Server error", err });
     }
 };
 
@@ -216,8 +218,8 @@ const deleteUser = async (req: Request, res: Response) => {
             return res.json({ message: "User delete success " });
         }
 
-    } catch (error) {
-        console.error("❌ Delete error:", error);
+    } catch (err) {
+        console.error("❌ Delete error:", err);
         res.status(500).json({ message: " Error deleting user" });
     }
 };

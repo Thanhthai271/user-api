@@ -1,5 +1,5 @@
 import { User } from "../users/user.models"
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { SECRET_KEY, SECRET_KEY_REFRESH } from "../utils/jwt";
 

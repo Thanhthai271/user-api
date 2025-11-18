@@ -12,7 +12,7 @@ async function login() {
         });
 
         const data = await res.json();
-
+        
         if(!res.ok){
             console.log(data)
             alert("Sai username hoặc password")
@@ -24,7 +24,7 @@ async function login() {
 
         localStorage.setItem("token", data.token);
 
-        // window.location.href = "fb.com";
+        window.location.href = "index.html";
 
     }catch(err){
         console.error(err);
