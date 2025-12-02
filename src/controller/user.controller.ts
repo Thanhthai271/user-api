@@ -3,7 +3,8 @@ import { User } from "../users/user.models"
 import jwt from "jsonwebtoken"
 import { SECRET_KEY, SECRET_KEY_REFRESH } from "../utils/jwt";
 import { Types } from "mongoose";
-import { skip } from "node:test";
+
+
 
 
 const login = async (req: Request, res: Response) => {
@@ -54,7 +55,7 @@ const login = async (req: Request, res: Response) => {
 // Tạo user
 const createUser = async (req: Request, res: Response) => {
     try {
-        const { username, password, room, email } = req.body;
+        const { username, password, room, email, } = req.body;
 
         // Kiểm tra username có tồn tại chưa
         const existingUser = await User.findOne({ username });
@@ -87,7 +88,7 @@ const createUser = async (req: Request, res: Response) => {
 const getUser = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const { username, password } = req.body || {};
+        const { username, email } = req.query;
 
         if (id) {
             if (!Types.ObjectId.isValid(id as string)) {
@@ -100,11 +101,15 @@ const getUser = async (req: Request, res: Response) => {
             return res.json(getUserById);
         }
 
-        const getUser = await User.findOne({ $or: [{ username }, { password }] });
-        if (!getUser) {
-            return res.status(404).json({ message: "User not found, try by id" });
+        if (username || email) {
+            const getUser = await User.findOne({ $or: [{ username }, { email }] });
+            if (!getUser) {
+                return res.status(404).json({ message: "User not found, try by id" });
+            }
+            return res.json(getUser)
         }
-        return res.json(getUser)
+
+        return res.json({ message: "id or username or email not found" })
 
     } catch (err) {
         console.error("❌ find user error", err)
@@ -116,34 +121,58 @@ const getUser = async (req: Request, res: Response) => {
 //Lấy toàn bộ user
 const getAllUser = async (req: Request, res: Response) => {
     try {
-        const limitDefault = 10;
+        try {
+            const limitDefault = 10;
 
-        const limit = parseInt(req.query.limit as string) || limitDefault;
-        const offset = parseInt(req.query.offset as string) || 0;
-        const page = parseInt(req.query.page as string) || Math.floor(offset / limit) + 1;
+            const limit = parseInt(req.query.limit as string) || limitDefault;
+            const offset = parseInt(req.query.offset as string) || 0;
+            const page = parseInt(req.query.page as string) || Math.floor(offset / limit) + 1;
+            const skip = offset || (page - 1) * limit;
 
-        const totalUsers = await User.countDocuments();  // * Lấy tổng số lượng bản ghi (quan trọng cho thông tin phân trang)
-
-        const skip = offset || (page - 1) * limit;
-
-        const users = await User.find()
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit)
-
-        // Tính toán thông tin phân trang (metadata)
-        const totalPages = Math.ceil(totalUsers / limit);
-
-        res.json({
-            users,
-            pagination: {
-                totalUsers,
-                limit,
-                offset: offset,
-                currentPage: page,
-                totalPages,
+            const searchText = req.query.search as string
+            const matchStage = searchText ? {
+                $match: {
+                    $or: [
+                        { name: { $regex: searchText, $options: 'i' } },
+                        { email: { $regex: searchText, $options: 'i' } }
+                    ]
+                }
             }
-        })
+                : { $match: {} };
+
+            const countPromise = User.aggregate([
+                matchStage,
+                { $count: "total" }
+            ])
+
+            const findPromise = User.aggregate([
+                matchStage,
+                { $sort: { createdAt: -1 } },
+                { $skip: skip },
+                { $limit: limit },
+                { $project: { password: 0 } }//Tùy chọn ẩn mật khẩu
+
+            ])
+
+            const [countResult, users] = await Promise.all([countPromise, findPromise])
+
+            const totalUsers = countResult.length > 0 ? countResult[0].total : 0; // Toán tử 3 ngôi 
+            // Tính toán thông tin phân trang (metadata)
+            const totalPages = Math.ceil(totalUsers / limit);
+
+            res.json({
+                users,
+                pagination: {
+                    totalUsers,
+                    limit,
+                    offset: offset,
+                    currentPage: page,
+                    totalPages,
+                }
+            })
+        } catch (err) {
+            console.log(err)
+        }
     } catch (err) {
         console.error("❌ getAllUsers error", err)
         res.status(500).json({ message: " Error fetching users ", err });
@@ -158,7 +187,7 @@ const updateUser = async (req: Request, res: Response) => {
         const { id } = req.params;
         const { username, password, phone, email, address, room } = req.body;
 
-        // if (!id) {
+        if (id) {
             if (!Types.ObjectId.isValid(id as string)) {
                 res.status(400).json({ message: "Bad request, try again" })
             }
@@ -172,18 +201,22 @@ const updateUser = async (req: Request, res: Response) => {
                 return res.status(404).json({ message: "User not found, try by username or email" });
             }
             return res.json(updateUserbyid);
-        // }
+        }
 
-        // const updateUser = await User.findOneAndUpdate(
-        //     { $or: [{ username }, { email }] },
-        //     { username, email, password, phone, address, room },
-        //     { new: true, upsert: false }
-        // );
+        if (username || email) {
+            const updateUser = await User.findOneAndUpdate(
+                { $or: [{ username }, { email }] },
+                { username, email, password, phone, room, address },
+                { new: true, upsert: false }
+            )
 
-        // if (!updateUser) {
-        //     return res.status(404).json({ message: "User not found, try by id" });
-        // }
-        // return res.json(updateUser);
+            if (!updateUser) {
+                return res.status(404).json({ message: "User not found, try by id" })
+            }
+            return res.json(updateUser)
+        }
+
+        return res.json({ message: "username, email or id not found " })
 
     } catch (err) {
         console.error("❌ update error:", err);
@@ -195,34 +228,20 @@ const updateUser = async (req: Request, res: Response) => {
 // Delete user 
 const deleteUser = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params;
-        const { username, email } = req.body || {};
-
-        if (id) {
-            if (!Types.ObjectId.isValid(id as string)) {
-                return res.status(400).json({ message: "Bad Request, try by username or email" })
-            }
-            const user = await User.findOneAndDelete({ _id: new Types.ObjectId(id) });
-            if (!user) {
-                return res.json({ message: "User not found, try by username or email" });
-            }
-            return res.json({ message: " User delete success " });
+        const id = req.params.id || " ";
+        if (!Types.ObjectId.isValid(id)) {
+            return res.status(404).json({ message: "Bad request" })
         }
-
-        if (!username && !email) {
-            return res.json({ message: "Missing username or email" })
+        const deleteUser = await User.findByIdAndDelete(id)
+        if (!deleteUser) {
+            return res.status(404).json({ message: "User not found" })
         }
-
-        if (username || email) {
-            await User.findOneAndDelete({ $or: [{ username }, { email }] })
-            return res.json({ message: "User delete success " });
-        }
+        return res.status(200).json({ message: "Deleted user" })
 
     } catch (err) {
-        console.error("❌ Delete error:", err);
-        res.status(500).json({ message: " Error deleting user" });
+        console.log('error : ', err)
     }
-};
+}
 
 
 export { createUser, getUser, getAllUser, deleteUser, updateUser, login };

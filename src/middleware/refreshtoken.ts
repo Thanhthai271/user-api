@@ -16,7 +16,6 @@ const refreshTokenController = async (req: Request, res: Response) => {
             return res.status(403).json({ message: "Không có người dùng" })
         }
 
-
         let decoded: any = null
         try {
             decoded = jwt.verify(refreshToken, SECRET_KEY_REFRESH as string);
@@ -45,4 +44,4 @@ const refreshTokenController = async (req: Request, res: Response) => {
     }
 }
 
-export {refreshTokenController}
+export { refreshTokenController }

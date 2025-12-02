@@ -1,5 +1,5 @@
 import express from "express";
-import route from "./routes/user.route";
+import routes from "./routes";
 import { connectDB } from "./config/db";
 import cors from "cors";
 
@@ -14,15 +14,14 @@ app.use(cors({
 
 app.use(express.json());
 
-// Kết nối MongoDB
-connectDB();
-
-app.use("/api/users", route);
-
 app.use((req, res, next) => {
   console.log("Request:", req.method, req.originalUrl);
   next();
 });
 
+// Kết nối MongoDB
+connectDB();
+
+app.use("/api", routes);
 
 export default app;

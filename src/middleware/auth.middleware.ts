@@ -21,7 +21,7 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
             res.status(401).json({ message: "Thiếu hoặc sai định dạng token" })
         }
     } else {
-        res.status(401).json({ message: "Undefind" })
+        res.status(401).json({ message: "Undefind Token" })
     }
 }
 
