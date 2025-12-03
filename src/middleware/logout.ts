@@ -3,20 +3,22 @@ import { User } from "../users/user.models";
 
 const logout = async (req: Request, res: Response) => {
     try {
-        const tokenToRemove = req.body.refreshToken;
+        const tokenToRemove = req.cookies.refreshToken;
 
         if (!tokenToRemove) {
-            return res.status(400).json({ message: "không tìm thấy refreshToken" })
+            return res.json({ message: "Không tìm thấy Token để đăng xuất" })
         }
 
-        const result = await User.updateOne(
-            { refreshTokens : tokenToRemove },
-            { $pull: { refreshTokens: tokenToRemove } }
+        await User.findOneAndDelete(
+            { refreshToken: tokenToRemove }
         )
 
-    if (result.modifiedCount === 0) {
-        return res.json({message: "Không tìm thấy Token để đăng xuất"})
-    }    
+        res.clearCookie("refreshToken", {
+            httpOnly: true,
+            path: "/",
+            secure: false
+        })
+
         return res.status(200).json({ message: "Đăng xuất thành công" })
 
     } catch (err) {
@@ -24,4 +26,4 @@ const logout = async (req: Request, res: Response) => {
     }
 }
 
-export {logout}
+export { logout }

@@ -3,6 +3,7 @@ import { User } from "../users/user.models"
 import jwt from "jsonwebtoken"
 import { SECRET_KEY, SECRET_KEY_REFRESH } from "../utils/jwt";
 import { Types } from "mongoose";
+import { RefreshToken } from "../users/user.refreshToken";
 
 
 
@@ -29,16 +30,19 @@ const login = async (req: Request, res: Response) => {
             { expiresIn: "1h" }
         )
 
+        const timeDeathToken = 7 * 24 * 60 * 60 * 1000
+
         const refreshToken = jwt.sign(
             payload,
             SECRET_KEY_REFRESH as string,
             { expiresIn: "7d" }
         )
 
-        await User.updateOne(
-            { _id: user._id },
-            { $push: { refreshTokens: refreshToken } }
-        )
+        await RefreshToken.create({
+            refreshToken: refreshToken,
+            user: user._id,
+            expiresAt: new Date(Date.now()+ timeDeathToken)
+        })
 
         res.status(200).json({
             message: "Đăng nhập thành công",
@@ -121,58 +125,54 @@ const getUser = async (req: Request, res: Response) => {
 //Lấy toàn bộ user
 const getAllUser = async (req: Request, res: Response) => {
     try {
-        try {
-            const limitDefault = 10;
+        const limitDefault = 10;
 
-            const limit = parseInt(req.query.limit as string) || limitDefault;
-            const offset = parseInt(req.query.offset as string) || 0;
-            const page = parseInt(req.query.page as string) || Math.floor(offset / limit) + 1;
-            const skip = offset || (page - 1) * limit;
+        const limit = parseInt(req.query.limit as string) || limitDefault;
+        const offset = parseInt(req.query.offset as string) || 0;
+        const page = parseInt(req.query.page as string) || Math.floor(offset / limit) + 1;
+        const skip = offset || (page - 1) * limit;
 
-            const searchText = req.query.search as string
-            const matchStage = searchText ? {
-                $match: {
-                    $or: [
-                        { name: { $regex: searchText, $options: 'i' } },
-                        { email: { $regex: searchText, $options: 'i' } }
-                    ]
-                }
+        const searchText = req.query.search as string
+        const matchStage = searchText ? {
+            $match : {
+                $or : [
+                    {name:{$regex : searchText, $options : 'i'}},
+                    {email:{$regex : searchText, $options : 'i'}}
+                ]
             }
-                : { $match: {} };
-
-            const countPromise = User.aggregate([
-                matchStage,
-                { $count: "total" }
-            ])
-
-            const findPromise = User.aggregate([
-                matchStage,
-                { $sort: { createdAt: -1 } },
-                { $skip: skip },
-                { $limit: limit },
-                { $project: { password: 0 } }//Tùy chọn ẩn mật khẩu
-
-            ])
-
-            const [countResult, users] = await Promise.all([countPromise, findPromise])
-
-            const totalUsers = countResult.length > 0 ? countResult[0].total : 0; // Toán tử 3 ngôi 
-            // Tính toán thông tin phân trang (metadata)
-            const totalPages = Math.ceil(totalUsers / limit);
-
-            res.json({
-                users,
-                pagination: {
-                    totalUsers,
-                    limit,
-                    offset: offset,
-                    currentPage: page,
-                    totalPages,
-                }
-            })
-        } catch (err) {
-            console.log(err)
         }
+        : {$match: {}};
+
+        const countPromise = User.aggregate([
+            matchStage,
+            {$count:"total"}
+        ])
+
+        const findPromise = User.aggregate([
+            matchStage,
+            {$sort:{createdAt : -1}},
+            {$skip:skip},
+            {$limit:limit},
+            {$project:{password: 0}}//Tùy chọn ẩn mật khẩu
+           
+        ])
+
+        const [countResult, users] = await Promise.all([countPromise, findPromise])
+
+        const totalUsers = countResult.length > 0 ? countResult[0].total : 0; // Toán tử 3 ngôi 
+        // Tính toán thông tin phân trang (metadata)
+        const totalPages = Math.ceil(totalUsers / limit);
+
+        res.json({
+            users,
+            pagination: {
+                totalUsers,
+                limit,
+                offset: offset,
+                currentPage: page,
+                totalPages,
+            }
+        })
     } catch (err) {
         console.error("❌ getAllUsers error", err)
         res.status(500).json({ message: " Error fetching users ", err });

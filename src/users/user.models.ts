@@ -7,8 +7,7 @@ const userSchema = new mongoose.Schema(
     phone: { type: String, unique: true, sparse: true },
     email: { type: String, unique: true, sparse: true, required: true },
     address: { type: String, sparse: true },
-    room: { type: String, required: true },
-    refreshTokens: [{ type: String, unique: true }]
+    room: { type: String, required: true }
   },
 
   { timestamps: true }
