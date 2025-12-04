@@ -44,6 +44,14 @@ const login = async (req: Request, res: Response) => {
             expiresAt: new Date(Date.now()+ timeDeathToken)
         })
 
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: false,
+            path:"/",
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        })
+        
         res.status(200).json({
             message: "Đăng nhập thành công",
             accesToken: accesToken,

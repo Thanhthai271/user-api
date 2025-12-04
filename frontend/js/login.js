@@ -1,4 +1,4 @@
-const BaseURL = "http://localhost:5000/api/users";
+import BaseURL from './route.js'
 
 async function login() {
     const username = document.getElementById("username").value;
@@ -24,7 +24,7 @@ async function login() {
 
         localStorage.setItem("token", data.token);
 
-        window.location.href = "index.html";
+        // window.location.href = "index.html";
 
     }catch(err){
         console.error(err);
@@ -33,3 +33,5 @@ async function login() {
 }
 
 document.getElementById("dangnhapBtn").addEventListener("click", login);
+
+

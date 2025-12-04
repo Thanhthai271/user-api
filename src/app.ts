@@ -2,6 +2,7 @@ import express from "express";
 import routes from "./routes";
 import { connectDB } from "./config/db";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 const app = express();
 
@@ -12,16 +13,14 @@ app.use(cors({
   credentials: true // Cho phép gửi cookie/token
 }));
 
-app.use(express.json());
 
+app.use(cookieParser());
+app.use(express.json());
 app.use((req, res, next) => {
   console.log("Request:", req.method, req.originalUrl);
   next();
 });
-
-// Kết nối MongoDB
-connectDB();
-
 app.use("/api", routes);
+connectDB();
 
 export default app;

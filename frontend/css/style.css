@@ -5,7 +5,7 @@ html,body {
 }
 
 body{
-    background: url('../frontend/image/bg1.jpg');
+    background: url('../image/bg1.jpg');
     background-size: cover;
     background-position-y: -23px;
 }
@@ -19,7 +19,7 @@ body{
     align-items: center;
 }
 
-#form-login{
+#form-login, #form-register{
     max-width: 400px;
     background-color: rgba(0, 0, 0, 0.8);
     flex-grow: 1;
@@ -64,7 +64,7 @@ body{
     text-transform: uppercase;
     padding: 6px 10px;
     transition: 0.25s ease-in-out;
-    margin-top: 20pxs;
+    margin-top: 20px;
 }
 
 .form-submit:hover{
