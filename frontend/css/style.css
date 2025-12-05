@@ -1,0 +1,73 @@
+html,body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body{
+    background: url('../image/bg1.jpg');
+    background-size: cover;
+    background-position-y: -23px;
+}
+
+#wrapper{
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 40px;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#form-login, #form-register{
+    max-width: 400px;
+    background-color: rgba(0, 0, 0, 0.8);
+    flex-grow: 1;
+    padding: 30px 30px 40px;
+    box-shadow: 0px 0px 17px 2px rgba(252, 252, 252, 0.8);
+}
+
+.form-heading{
+    font-size: 25px;
+    color: #f5f5f5;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.form-group{
+    border-bottom: 1px solid £fff;
+    margin-top: 15px;
+    margin-bottom: 20px;
+    display: flex;
+}
+
+.form-input{
+    background: transparent;
+    border: 0;
+    border-bottom: 2px solid #797272;
+    outline: 0;
+    color: #f5f5f5;
+    flex-grow: 1;
+    margin-top: 5px;
+}
+
+.form-input::placeholder{
+    color: whitesmoke;
+
+}
+
+.form-submit{
+    background: transparent;
+    border: 1px solid whitesmoke;
+    color: white;
+    width: 100%;
+    text-transform: uppercase;
+    padding: 6px 10px;
+    transition: 0.25s ease-in-out;
+    margin-top: 20px;
+}
+
+.form-submit:hover{
+    border: 1px solid #2c3e50;
+}
+
