@@ -84,7 +84,7 @@ const createUser = async (req: Request, res: Response) => {
         });
 
         await newUser.save();
-        res.status(201).json({
+        res.status(200).json({
             message: "Tạo user thành công",
             user: newUser,
         });
@@ -250,6 +250,8 @@ const deleteUser = async (req: Request, res: Response) => {
         console.log('error : ', err)
     }
 }
+
+
 
 
 export { createUser, getUser, getAllUser, deleteUser, updateUser, login };

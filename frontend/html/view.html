@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chuỗi nhà trọ yêu thương</title>
+    <link rel="stylesheet" href="../css/view.css">
+</head>
+
+    <div class="container">
+        <!-- TOP NAVIGATION -->
+        <div class="glass-panel top-nav">
+            <div class="brand"><i class="fas fa-building"></i> QUẢN LÝ NHÀ TRỌ</div>
+            <div class="nav-links">
+                <a href="#" class="nav-item active"><i class="fas fa-home"></i> Quản lý phòng</a>
+                <a href="#" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Hóa đơn</a>
+                <a href="#" class="nav-item"><i class="fas fa-concierge-bell"></i> Dịch vụ</a>
+                <a href="#" class="nav-item"><i class="fas fa-file-contract"></i> Hợp đồng</a>
+                <a href="#" class="nav-item"><i class="fas fa-users"></i> Khách thuê</a>
+                <a href="#" class="nav-item"><i class="fas fa-chart-line"></i> Thu/Chi</a>
+                <a href="#" class="nav-item"><i class="fas fa-cog"></i> Cài đặt</a>
+            </div>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-container">
+            <div class="glass-panel stat-card">
+                <div class="stat-info"><h3>Tổng số tiền khách nợ</h3><p style="color: #ff7675;">0 đ</p></div>
+                <div class="stat-icon" style="color: #ff7675;"><i class="fas fa-exclamation-circle"></i></div>
+            </div>
+            <div class="glass-panel stat-card">
+                <div class="stat-info"><h3>Tổng số tiền cọc</h3><p style="color: #55efc4;">0 đ</p></div>
+                <div class="stat-icon" style="color: #55efc4;"><i class="fas fa-money-bill-wave"></i></div>
+            </div>
+            <div class="glass-panel stat-card">
+                <div class="stat-info"><h3>Tiền cọc giữ chỗ</h3><p style="color: #ffeaa7;">0 đ</p></div>
+                <div class="stat-icon" style="color: #ffeaa7;"><i class="fas fa-hand-holding-usd"></i></div>
+            </div>
+            <div class="glass-panel stat-card">
+                <div class="stat-info"><h3>Sự cố phòng</h3><p style="color: #fab1a0;">0 Vấn đề</p></div>
+                <div class="stat-icon" style="color: #fab1a0;"><i class="fas fa-tools"></i></div>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="glass-panel">
+            <div class="toolbar">
+                <div class="filter-group">
+                    <div style="font-weight: bold; margin-right: 10px; color: #00ffcc;">Bộ lọc:</div>
+                    <!-- 
+                        Các input checkbox có class 'filter-cb' và attribute 'data-filter'
+                        JS sẽ lắng nghe sự kiện change ở đây.
+                    -->
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="filter-cb" data-filter="all" checked> Tất cả
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="filter-cb" data-filter="occupied"> Đang ở
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="filter-cb" data-filter="empty"> Đang trống
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="filter-cb" data-filter="debt"> Chưa thanh toán
+                    </label>
+                </div>
+
+                <div class="filter-group">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Tìm tên phòng...">
+                    </div>
+                    <button class="action-btn"><i class="fas fa-file-excel"></i> Xuất Excel</button>
+                    <button class="action-btn"><i class="fas fa-plus"></i> Thêm phòng</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <!-- Bảng hiển thị dữ liệu -->
+                <table id="roomTable">
+                    <thead>
+                        <tr>
+                            <th width="50">#</th>
+                            <th>Tên phòng</th>
+                            <th>Nhóm</th>
+                            <th>Giá thuê</th>
+                            <th>Tiền cọc</th>
+                            <th>Khách thuê</th>
+                            <th>Ngày lập HĐ</th>
+                            <th>Hợp đồng</th>
+                            <th>Tình trạng</th>
+                            <th>Tạo Bill</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <!-- 
+                        TBODY ĐỂ TRỐNG 
+                        Lý do: JS sẽ tự động fetch API và điền các dòng <tr> vào đây.
+                    -->
+                    <tbody></tbody>
+                </table>
+            </div>
+            
+            <div style="padding: 20px; text-align: right; color: #aaa; font-size: 12px; border-top: 1px solid rgba(255,255,255,0.1);">
+                Hiển thị danh sách phòng | Copyright © Quản lý nhà trọ Galaxy
+            </div>
+        </div>
+    </div>
+
+
+    <script src="../js/view.js"></script>
+</body>
+
+</html>
