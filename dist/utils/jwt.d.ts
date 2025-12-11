@@ -1,5 +1,4 @@
-import jwt from "jsonwebtoken";
-export declare const createToken: (payload: object) => string;
-export declare const createRefreshToken: (payload: object) => string;
-export declare const verifyToken: (token: string) => string | jwt.JwtPayload;
+declare const SECRET_KEY: string | undefined;
+declare const SECRET_KEY_REFRESH: string | undefined;
+export { SECRET_KEY, SECRET_KEY_REFRESH };
 //# sourceMappingURL=jwt.d.ts.map

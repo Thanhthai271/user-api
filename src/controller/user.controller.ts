@@ -4,9 +4,7 @@ import jwt from "jsonwebtoken"
 import { SECRET_KEY, SECRET_KEY_REFRESH } from "../utils/jwt";
 import { Types } from "mongoose";
 import { RefreshToken } from "../users/user.refreshToken";
-
-
-
+import { id } from "zod/v4/locales";
 
 const login = async (req: Request, res: Response) => {
     try {
@@ -41,17 +39,17 @@ const login = async (req: Request, res: Response) => {
         await RefreshToken.create({
             refreshToken: refreshToken,
             user: user._id,
-            expiresAt: new Date(Date.now()+ timeDeathToken)
+            expiresAt: new Date(Date.now() + timeDeathToken)
         })
 
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: false,
-            path:"/",
+            path: "/",
             sameSite: "strict",
             maxAge: 7 * 24 * 60 * 60 * 1000
         })
-        
+
         res.status(200).json({
             message: "Đăng nhập thành công",
             accesToken: accesToken,
@@ -95,43 +93,27 @@ const createUser = async (req: Request, res: Response) => {
     }
 };
 
-
-// Tìm user 
-const getUser = async (req: Request, res: Response) => {
+const getUserById = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const { username, email } = req.query;
-
-        if (id) {
-            if (!Types.ObjectId.isValid(id as string)) {
-                res.status(400).json({ message: "Bad request, try by username or email" })
-            }
-            const getUserById = await User.findById(new Types.ObjectId(id as string))
-            if (!getUserById) {
-                return res.status(404).json({ message: "User not found, try by username or email" });
-            }
-            return res.json(getUserById);
+        if (!Types.ObjectId.isValid(id as string)) {
+            return res.status(404).json({ message: "Bad request" })
         }
 
-        if (username || email) {
-            const getUser = await User.findOne({ $or: [{ username }, { email }] });
-            if (!getUser) {
-                return res.status(404).json({ message: "User not found, try by id" });
-            }
-            return res.json(getUser)
+        const getUserById = await User.findOne(new Types.ObjectId(id as string));
+
+        if (!getUserById) {
+            return res.status(400).json({ message: 'User not found' })
         }
 
-        return res.json({ message: "id or username or email not found" })
-
+        return res.status(200).json(getUserById)
     } catch (err) {
-        console.error("❌ find user error", err)
-        res.status(500).json({ message: "Error fetching user", err })
+        console.log(">>> Error : ", err)
     }
-};
-
+}
 
 //Lấy toàn bộ user
-const getAllUser = async (req: Request, res: Response) => {
+const getUser = async (req: Request, res: Response) => {
     try {
         const limitDefault = 10;
 
@@ -139,30 +121,49 @@ const getAllUser = async (req: Request, res: Response) => {
         const offset = parseInt(req.query.offset as string) || 0;
         const page = parseInt(req.query.page as string) || Math.floor(offset / limit) + 1;
         const skip = offset || (page - 1) * limit;
-
         const searchText = req.query.search as string
+
+        if (req.query.limit && isNaN(Number(req.query.limit))) {
+            return res.status(400).json({ message: 'limit must be number' })
+        }
+
+        if (req.query.page && isNaN(Number(req.query.page))) {
+            return res.status(400).json({ message: 'page must be number' })
+        }
+
+        if (req.query.offset && isNaN(Number(req.query.offset))) {
+            return res.status(400).json({ message: 'offset must be number' })
+        }
+
+        if (req.query.searchText && typeof req.query.searchText !== "string") {
+            return res.status(400).json({ message: 'searchtext' })
+        }
+
         const matchStage = searchText ? {
-            $match : {
-                $or : [
-                    {name:{$regex : searchText, $options : 'i'}},
-                    {email:{$regex : searchText, $options : 'i'}}
+            $match: {
+                $or: [
+                    { name: { $regex: searchText, $options: 'i' } },
+                    { email: { $regex: searchText, $options: 'i' } },
                 ]
             }
         }
-        : {$match: {}};
+
+            : { $match: {} };
+
+        // >>> Toán tử 3 ngôi điều kiện nếu có matchStage ? a : b
 
         const countPromise = User.aggregate([
             matchStage,
-            {$count:"total"}
+            { $count: "total" }
         ])
 
         const findPromise = User.aggregate([
             matchStage,
-            {$sort:{createdAt : -1}},
-            {$skip:skip},
-            {$limit:limit},
-            {$project:{password: 0}}//Tùy chọn ẩn mật khẩu
-           
+            { $sort: { createdAt: -1 } },
+            { $skip: skip },
+            { $limit: limit },
+            { $project: { password: 0 } }//Tùy chọn ẩn mật khẩu
+
         ])
 
         const [countResult, users] = await Promise.all([countPromise, findPromise])
@@ -254,5 +255,5 @@ const deleteUser = async (req: Request, res: Response) => {
 
 
 
-export { createUser, getUser, getAllUser, deleteUser, updateUser, login };
+export { createUser,getUserById, getUser, deleteUser, updateUser, login };
 

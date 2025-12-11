@@ -1,9 +1,9 @@
 import express from "express"
-import { login, createUser, getAllUser, getUser, deleteUser, updateUser } from "../controller/user.controller"
+import { login, createUser,getUserById, getUser, deleteUser, updateUser } from "../controller/user.controller"
 import { authMiddleware } from "../middleware/auth.middleware"
 import { refreshTokenController } from "../middleware/refreshtoken"
 import { logout } from "../middleware/logout"
-import { createRoom } from "../controller/room.controller"
+import { createRoom, getRoom, updateRoom, deleteRoom } from "../controller/room.controller"
 const router = express.Router();
 
 // Public routes
@@ -12,14 +12,16 @@ router.post("/create", createUser);
 router.post("/refresh-token", refreshTokenController);
 
 router.post("/createRoom", createRoom)
+router.get("/getRoom", getRoom)
+router.patch("/updateRoom/:roomNum", updateRoom)
+router.delete("/deleteRoom/:roomNum", deleteRoom)
 
 // Private routes
 router.use(authMiddleware);
 
 // Get routes
-router.get("/", getAllUser);
-router.get("/search", getUser);
-router.get("/search/:id", getUser);
+// router.get("/search", getUser);
+// router.get("/search/:id", getUserById);
 
 
 // Put routes

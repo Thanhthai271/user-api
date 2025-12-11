@@ -22,9 +22,9 @@ async function register() {
         }
 
         console.log(data)
-        return alert("Đăng ký thành công")
+        alert("Đăng ký thành công")
 
-        // window.location.href="login.html";
+        window.location.href="login.html";
 
     } catch (err) {
         console.error(err);
