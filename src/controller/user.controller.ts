@@ -125,7 +125,7 @@ const getUser = async (req: Request, res: Response) => {
         const searchText = req.query.search as string;
 
         // 2. VALIDATION – chỉ kiểm tra nếu client có gửi params
-        if (req.query.limit !== undefined && isNaN(limitRaw)) {
+        if (req.query.limit !== undefined && (isNaN(limitRaw)) || limitRaw < 0) {
             return res.status(400).json({ message: 'limit must be number' });
         }
 
@@ -188,6 +188,10 @@ const getUser = async (req: Request, res: Response) => {
         }
 
         if (skip >= totalUsers && totalUsers > 0) {
+            return res.status(400).json({ message: `Hiện tại chỉ có ${totalUsers} người` });
+        }
+
+        if (limit >= totalUsers && totalUsers > 0) {
             return res.status(400).json({ message: `Hiện tại chỉ có ${totalUsers} người` });
         }
 
