@@ -44,27 +44,36 @@ const createRoom = async (req: Request, res: Response) => {
 const getRoom = async (req: Request, res: Response) => {
     try {
         const limitDefault = 10;
-        const limit = parseInt(req.query.limit as string) || limitDefault;
-        const offset = parseInt(req.query.offset as string) || 0;
-        const page = parseInt(req.query.page as string) || Math.floor(offset / limit) + 1;
-        const skip = parseInt(req.query.skip as string) || (page - 1) * limit
+        const limitRaw = Number(req.query.limit as string)
+        const offsetRaw = Number(req.query.offset as string)
+        const pageRaw = Number(req.query.page as string)
+        const skipRaw = Number(req.query.skip as string)
         const searchText = req.query.search as string
 
-        if (req.query.limit && isNaN(Number(req.query.limit))) {
-            return res.status(400).json({ message: 'limit must be number' })
+        if (req.query.limit !== undefined && (isNaN(Number(limitRaw)) || limitRaw < 0)) {
+            return res.status(400).json({ message: 'limit must be non-negative number' })
         }
 
-        if (req.query.page && isNaN(Number(req.query.page))) {
-            return res.status(400).json({ message: 'page must be number' })
+        if (req.query.page !== undefined && (isNaN(Number(pageRaw)) || pageRaw < 1)) {
+            return res.status(400).json({ message: 'page must be non-negative number' })
         }
 
-        if (req.query.offset && isNaN(Number(req.query.offset))) {
-            return res.status(400).json({ message: 'offset must be number' })
+        if (req.query.offset !== undefined && (isNaN(offsetRaw) || offsetRaw < 0)) {
+            return res.status(400).json({ message: 'offset must be non-negative number' })
         }
 
-        if (req.query.searchText && typeof req.query.searchText !== "string") {
+        if (req.query.skip !== undefined && (isNaN(skipRaw) || skipRaw < 0)) {
+            return res.status(400).json({ message: 'skip must be non-negative number' })
+        }
+
+        if (req.query.search && typeof req.query.search !== "string") {
             return res.status(400).json({ message: 'searchtext' })
         }
+
+        const limit = !isNaN(limitRaw) ? limitRaw : limitDefault
+        const offset = !isNaN(offsetRaw) ? offsetRaw : 0
+        const page = !isNaN(pageRaw) ? pageRaw : Math.floor(offset / limit) + 1
+        const skip = !isNaN(skipRaw) ? skipRaw : (page - 1) * limit
 
         const matchStage = searchText ? {
             $match: { roomNum: { $regex: searchText, $options: 'i' } }
@@ -80,7 +89,7 @@ const getRoom = async (req: Request, res: Response) => {
         const findPromise = Room.aggregate([
             matchStage,
             { $sort: { createdAt: -1 } },
-            { $skip: skip },
+            { $skip: skip || offset },
             { $limit: limit },
         ])
 
@@ -88,11 +97,27 @@ const getRoom = async (req: Request, res: Response) => {
         const totalRoom = countRoom.length > 0 ? countRoom[0].total : 0
         const totalPages = Math.ceil(totalRoom / limit)
 
+        if (page !== totalPages) {
+            return res.status(400).json({ message: `Hiện tại chỉ có ${totalPages} trang` })
+        }
+
+        if (req.query.skip && skip >= totalRoom) {
+            return res.status(400).json({ message: `Hiện tại chỉ có ${totalRoom} phòng` });
+        }
+
+        if (req.query.offset && offset >= totalRoom) {
+            return res.status(400).json({ message: `Hiện tại chỉ có ${totalRoom} phòng` });
+        }
+
+        if (req.query.limit && limit >= totalRoom) {
+            return res.status(400).json({message: `Hiện tại chỉ có ${totalRoom} phòng` })
+        }
         res.status(200).json({
             rooms,
             pagination: {
                 totalRoom,
                 skip,
+                offset,
                 limit,
                 page,
                 totalPages
@@ -127,7 +152,7 @@ const deleteRoom = async (req: Request, res: Response) => {
             return res.status(400).json({ message: "Room not found or required" })
         }
         await Room.findOneAndDelete({ roomNum })
-        return res.status(200).json({ message: 'Deleted room success'})
+        return res.status(200).json({ message: 'Deleted room success' })
     } catch (err) {
         console.log("error :", err)
         return res.status(500).json({ message: "server error" })

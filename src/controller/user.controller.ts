@@ -5,6 +5,7 @@ import { SECRET_KEY, SECRET_KEY_REFRESH } from "../utils/jwt";
 import { Types } from "mongoose";
 import { RefreshToken } from "../users/user.refreshToken";
 import { id } from "zod/v4/locales";
+import { off } from "process";
 
 const login = async (req: Request, res: Response) => {
     try {
@@ -112,81 +113,101 @@ const getUserById = async (req: Request, res: Response) => {
     }
 }
 
-//Lấy toàn bộ user
 const getUser = async (req: Request, res: Response) => {
     try {
         const limitDefault = 10;
 
-        const limit = parseInt(req.query.limit as string) || limitDefault;
-        const offset = parseInt(req.query.offset as string) || 0;
-        const page = parseInt(req.query.page as string) || Math.floor(offset / limit) + 1;
-        const skip = offset || (page - 1) * limit;
-        const searchText = req.query.search as string
+        // 1. Convert tất cả tham số sang số: có thể là NaN nếu client nhập sai
+        const limitRaw = Number(req.query.limit);
+        const offsetRaw = Number(req.query.offset);
+        const pageRaw = Number(req.query.page);
+        const skipRaw = Number(req.query.skip);
+        const searchText = req.query.search as string;
 
-        if (req.query.limit && isNaN(Number(req.query.limit))) {
-            return res.status(400).json({ message: 'limit must be number' })
+        // 2. VALIDATION – chỉ kiểm tra nếu client có gửi params
+        if (req.query.limit !== undefined && isNaN(limitRaw)) {
+            return res.status(400).json({ message: 'limit must be number' });
         }
 
-        if (req.query.page && isNaN(Number(req.query.page))) {
-            return res.status(400).json({ message: 'page must be number' })
+        if (req.query.offset !== undefined && (isNaN(offsetRaw) || offsetRaw < 0)) {
+            return res.status(400).json({ message: 'offset must be non-negative number' });
         }
 
-        if (req.query.offset && isNaN(Number(req.query.offset))) {
-            return res.status(400).json({ message: 'offset must be number' })
+        if (req.query.page !== undefined && (isNaN(pageRaw) || pageRaw < 1)) {
+            return res.status(400).json({ message: 'page must be positive number' });
         }
 
-        if (req.query.searchText && typeof req.query.searchText !== "string") {
-            return res.status(400).json({ message: 'searchtext' })
+        if (req.query.skip !== undefined && (isNaN(skipRaw) || skipRaw < 0)) {
+            return res.status(400).json({ message: 'skip must be non-negative number' });
         }
 
-        const matchStage = searchText ? {
-            $match: {
-                $or: [
-                    { name: { $regex: searchText, $options: 'i' } },
-                    { email: { $regex: searchText, $options: 'i' } },
-                ]
+        // 3. SET GIÁ TRỊ CUỐI CÙNG (nếu user không nhập thì xài mặc định)
+        const limit = !isNaN(limitRaw) ? limitRaw : limitDefault;
+        const offset = !isNaN(offsetRaw) ? offsetRaw : 0;
+
+        const page = !isNaN(pageRaw)
+            ? pageRaw
+            : Math.floor(offset / limit) + 1;
+
+        const skip = !isNaN(skipRaw)
+            ? skipRaw
+            : (page - 1) * limit;
+
+        // 4. Tạo match filter
+        const matchStage = searchText
+            ? {
+                $match: {
+                    $or: [
+                        { name: { $regex: searchText, $options: 'i' } },
+                        { email: { $regex: searchText, $options: 'i' } }
+                    ]
+                }
             }
-        }
-
             : { $match: {} };
-
-        // >>> Toán tử 3 ngôi điều kiện nếu có matchStage ? a : b
 
         const countPromise = User.aggregate([
             matchStage,
             { $count: "total" }
-        ])
+        ]);
 
         const findPromise = User.aggregate([
             matchStage,
             { $sort: { createdAt: -1 } },
             { $skip: skip },
             { $limit: limit },
-            { $project: { password: 0 } }//Tùy chọn ẩn mật khẩu
+            { $project: { password: 0 } }
+        ]);
 
-        ])
+        const [countResult, users] = await Promise.all([countPromise, findPromise]);
 
-        const [countResult, users] = await Promise.all([countPromise, findPromise])
-
-        const totalUsers = countResult.length > 0 ? countResult[0].total : 0; // Toán tử 3 ngôi 
-        // Tính toán thông tin phân trang (metadata)
+        const totalUsers = countResult.length > 0 ? countResult[0].total : 0;
         const totalPages = Math.ceil(totalUsers / limit);
 
-        res.json({
+        if (page > totalPages) {
+            return res.status(400).json({ message: `Hiện tại chỉ có ${totalPages} trang` });
+        }
+
+        if (skip >= totalUsers && totalUsers > 0) {
+            return res.status(400).json({ message: `Hiện tại chỉ có ${totalUsers} người` });
+        }
+
+        return res.status(200).json({
             users,
             pagination: {
                 totalUsers,
                 limit,
-                offset: offset,
+                offset,
                 currentPage: page,
-                totalPages,
+                totalPages
             }
-        })
+        });
+
     } catch (err) {
-        console.error("❌ getAllUsers error", err)
-        res.status(500).json({ message: " Error fetching users ", err });
+        console.error("❌ getAllUsers error", err);
+        return res.status(500).json({ message: "Error fetching users", err });
     }
 };
+
 
 
 // Update user 
@@ -255,5 +276,5 @@ const deleteUser = async (req: Request, res: Response) => {
 
 
 
-export { createUser,getUserById, getUser, deleteUser, updateUser, login };
+export { createUser, getUserById, getUser, deleteUser, updateUser, login };
 

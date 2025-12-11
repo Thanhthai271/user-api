@@ -20,8 +20,8 @@ router.delete("/deleteRoom/:roomNum", deleteRoom)
 router.use(authMiddleware);
 
 // Get routes
-// router.get("/search", getUser);
-// router.get("/search/:id", getUserById);
+router.get("/getUser", getUser);
+router.get("/getUser/:id", getUserById);
 
 
 // Put routes
