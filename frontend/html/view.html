@@ -4,66 +4,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chuỗi nhà trọ yêu thương</title>
+    <title>Quản Lý Nhà Trọ</title>
     <link rel="stylesheet" href="../css/view.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
+<body>
     <div class="container">
-        <!-- TOP NAVIGATION -->
         <div class="glass-panel top-nav">
             <div class="brand"><i class="fas fa-building"></i> QUẢN LÝ NHÀ TRỌ</div>
             <div class="nav-links">
-                <a href="#" class="nav-item active"><i class="fas fa-home"></i> Quản lý phòng</a>
-                <a href="#" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Hóa đơn</a>
-                <a href="#" class="nav-item"><i class="fas fa-concierge-bell"></i> Dịch vụ</a>
-                <a href="#" class="nav-item"><i class="fas fa-file-contract"></i> Hợp đồng</a>
-                <a href="#" class="nav-item"><i class="fas fa-users"></i> Khách thuê</a>
-                <a href="#" class="nav-item"><i class="fas fa-chart-line"></i> Thu/Chi</a>
-                <a href="#" class="nav-item"><i class="fas fa-cog"></i> Cài đặt</a>
+                 <a href="#" class="nav-item active"><i class="fas fa-home"></i>Tổng quan</a>
+                <a href="#" class="nav-item"><i class="fas fa-door-open"></i>Phòng</a>
+                <a href="#" class="nav-item"><i class="fas fa-file-invoice-dollar"></i>Hóa đơn</a>
+                <a href="#" class="nav-item"><i class="fas fa-chart-pie"></i>Báo cáo</a>
+            </div>
+            <div class="user-info">
+                <i class="fas fa-user-circle" style="font-size: 24px; margin-right: 10px;"></i>
+                <span>Admin</span>
             </div>
         </div>
 
-        <!-- STATS -->
         <div class="stats-container">
-            <div class="glass-panel stat-card">
-                <div class="stat-info"><h3>Tổng số tiền khách nợ</h3><p style="color: #ff7675;">0 đ</p></div>
-                <div class="stat-icon" style="color: #ff7675;"><i class="fas fa-exclamation-circle"></i></div>
+            <div class="glass-panel stat-card" style="border-left-color: #ff7675;">
+                <div class="stat-info">
+                    <h3>Tổng số tiền khách nợ</h3>
+                    <p id="statDebt" style="color: #ff7675;">0 đ</p>
+                </div>
+                <div class="stat-icon" style="color: #ff7675;"><i class="fas fa-hand-holding-usd"></i></div>
             </div>
-            <div class="glass-panel stat-card">
-                <div class="stat-info"><h3>Tổng số tiền cọc</h3><p style="color: #55efc4;">0 đ</p></div>
-                <div class="stat-icon" style="color: #55efc4;"><i class="fas fa-money-bill-wave"></i></div>
+            <div class="glass-panel stat-card" style="border-left-color: #00ffcc;">
+                <div class="stat-info">
+                    <h3>Tổng số tiền cọc</h3>
+                    <p id="statTotalDeposit" style="color: #00ffcc;">0 đ</p>
+                </div>
+                <div class="stat-icon" style="color: #00ffcc;"><i class="fas fa-money-bill-wave"></i></div>
             </div>
-            <div class="glass-panel stat-card">
-                <div class="stat-info"><h3>Tiền cọc giữ chỗ</h3><p style="color: #ffeaa7;">0 đ</p></div>
-                <div class="stat-icon" style="color: #ffeaa7;"><i class="fas fa-hand-holding-usd"></i></div>
+            <div class="glass-panel stat-card" style="border-left-color: #ffeaa7;">
+                <div class="stat-info">
+                    <h3>Tiền cọc giữ chỗ</h3>
+                    <p id="statReservation" style="color: #ffeaa7;">0 đ</p>
+                </div>
+                <div class="stat-icon" style="color: #ffeaa7;"><i class="fas fa-bookmark"></i></div>
             </div>
-            <div class="glass-panel stat-card">
-                <div class="stat-info"><h3>Sự cố phòng</h3><p style="color: #fab1a0;">0 Vấn đề</p></div>
-                <div class="stat-icon" style="color: #fab1a0;"><i class="fas fa-tools"></i></div>
+             <div class="glass-panel stat-card" style="border-left-color: #ff7675;">
+                <div class="stat-info">
+                    <h3>Sự cố phòng</h3>
+                    <p id="statIncidents" style="color: #ff7675;">0 Vấn đề</p>
+                </div>
+                <div class="stat-icon" style="color: #ff7675;"><i class="fas fa-exclamation-triangle"></i></div>
             </div>
         </div>
 
-        <!-- MAIN CONTENT -->
         <div class="glass-panel">
             <div class="toolbar">
                 <div class="filter-group">
                     <div style="font-weight: bold; margin-right: 10px; color: #00ffcc;">Bộ lọc:</div>
-                    <!-- 
-                        Các input checkbox có class 'filter-cb' và attribute 'data-filter'
-                        JS sẽ lắng nghe sự kiện change ở đây.
-                    -->
-                    <label class="checkbox-item">
-                        <input type="checkbox" class="filter-cb" data-filter="all" checked> Tất cả
-                    </label>
-                    <label class="checkbox-item">
-                        <input type="checkbox" class="filter-cb" data-filter="occupied"> Đang ở
-                    </label>
-                    <label class="checkbox-item">
-                        <input type="checkbox" class="filter-cb" data-filter="empty"> Đang trống
-                    </label>
-                    <label class="checkbox-item">
-                        <input type="checkbox" class="filter-cb" data-filter="debt"> Chưa thanh toán
-                    </label>
+                    <label class="checkbox-item"><input type="checkbox" class="filter-cb" data-filter="all" checked> Tất cả</label>
+                    <label class="checkbox-item"><input type="checkbox" class="filter-cb" data-filter="occupied"> Đang ở</label>
+                    <label class="checkbox-item"><input type="checkbox" class="filter-cb" data-filter="empty"> Đang trống</label>
+                    <label class="checkbox-item"><input type="checkbox" class="filter-cb" data-filter="debt"> Sắp hết hạn/Nợ</label>
                 </div>
 
                 <div class="filter-group">
@@ -71,45 +71,92 @@
                         <i class="fas fa-search"></i>
                         <input type="text" id="searchInput" placeholder="Tìm tên phòng...">
                     </div>
-                    <button class="action-btn"><i class="fas fa-file-excel"></i> Xuất Excel</button>
-                    <button class="action-btn"><i class="fas fa-plus"></i> Thêm phòng</button>
+                    <button class="action-btn" style="background-color: #0984e3;"><i class="fas fa-file-excel"></i> Xuất Excel</button>
+                    <button class="action-btn" id="openCreateRoomBtn"><i class="fas fa-plus"></i> Thêm phòng</button>
                 </div>
             </div>
 
             <div class="table-container">
-                <!-- Bảng hiển thị dữ liệu -->
                 <table id="roomTable">
                     <thead>
                         <tr>
-                            <th width="50">#</th>
+                            <th width="40">#</th>
                             <th>Tên phòng</th>
                             <th>Nhóm</th>
                             <th>Giá thuê</th>
                             <th>Tiền cọc</th>
                             <th>Khách thuê</th>
-                            <th>Ngày lập HĐ</th>
-                            <th>Hợp đồng</th>
-                            <th>Tình trạng</th>
-                            <th>Tạo Bill</th>
-                            <th></th>
-                        </tr>
+                            <th>Ngày lập HĐ</th> <th>Hợp đồng</th>
+                            <th>Tình trạng</th> <th>Tạo Bill</th> </tr>
                     </thead>
-                    <!-- 
-                        TBODY ĐỂ TRỐNG 
-                        Lý do: JS sẽ tự động fetch API và điền các dòng <tr> vào đây.
-                    -->
-                    <tbody></tbody>
+                    <tbody>
+                        </tbody>
                 </table>
             </div>
             
-            <div style="padding: 20px; text-align: right; color: #aaa; font-size: 12px; border-top: 1px solid rgba(255,255,255,0.1);">
+            <div class="table-footer-info">
                 Hiển thị danh sách phòng | Copyright © Quản lý nhà trọ Galaxy
             </div>
         </div>
     </div>
 
+    <div id="createRoomModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2 class="modal-title" id="modalTitle">Thêm Phòng Mới</h2>
+            <input type="hidden" id="isEditMode" value="false">
+            <input type="hidden" id="editRoomId" value="">
 
-    <script src="../js/view.js"></script>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Tên Phòng (Room Num)</label>
+                    <input type="text" id="inpRoomNum" placeholder="VD: Phòng 101">
+                </div>
+                
+                <div class="form-group">
+                    <label>Nhóm (Group)</label>
+                    <input type="text" id="inpGroup" placeholder="VD: Tầng 1">
+                </div>
+                
+                <div class="form-group">
+                    <label>Giá thuê</label>
+                    <input type="text" id="inpPrice" placeholder="VD: 3.000.000">
+                </div>
+
+                <div class="form-group">
+                    <label>Tiền cọc</label>
+                    <input type="text" id="inpDeposit" placeholder="VD: 3.000.000">
+                </div>
+
+                <div class="form-group">
+                    <label>Người ở</label>
+                    <input type="text" id="inpOccupants" placeholder="VD: 0/2">
+                </div>
+
+                <div class="form-group">
+                    <label>Ngày Check-in (Ngày lập HĐ)</label>
+                    <input type="date" id="inpCheckinDate">
+                </div>
+
+                <div class="form-group">
+                    <label>Thời hạn HĐ</label>
+                    <input type="text" id="inpContractTerm" placeholder="VD: 12 tháng">
+                </div>
+
+                <div class="form-group">
+                    <label>Trạng thái phòng</label>
+                    <select id="inpStatus">
+                        <option value="Trống">Trống</option>
+                        <option value="Đang ở">Đang ở</option>
+                    </select>
+                </div>
+            </div>
+
+            <button id="submitCreateRoomBtn" class="submit-btn">Lưu Thông Tin</button>
+        </div>
+    </div>
+
+    <script type="module" src="../api/view.js"></script>
 </body>
 
 </html>

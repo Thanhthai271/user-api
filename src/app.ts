@@ -8,7 +8,7 @@ const app = express();
 
 app.use(cors({
   origin: ["http://127.0.0.1:5500", "http://localhost:5500"], // Cho phép domain frontend (VD: React)
-  methods: ["GET", "POST", "PUT", "DELETE"], // Các phương thức được phép
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"], // Các phương thức được phép
   allowedHeaders: ["Content-Type", "Authorization"], // Header được phép
   credentials: true // Cho phép gửi cookie/token
 }));

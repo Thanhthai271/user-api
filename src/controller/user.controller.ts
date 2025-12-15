@@ -4,8 +4,6 @@ import jwt from "jsonwebtoken"
 import { SECRET_KEY, SECRET_KEY_REFRESH } from "../utils/jwt";
 import { Types } from "mongoose";
 import { RefreshToken } from "../users/user.refreshToken";
-import { id } from "zod/v4/locales";
-import { off } from "process";
 
 const login = async (req: Request, res: Response) => {
     try {
@@ -16,14 +14,13 @@ const login = async (req: Request, res: Response) => {
             return res.status(404).json({ message: "Sai username hoặc password" })
         }
 
-        // Lấy Token 
         const payload = {
             id: user._id,
             user: user.username,
             email: user.email
         }
 
-        const accesToken = jwt.sign(
+        const accessToken = jwt.sign(
             payload,
             SECRET_KEY as string,
             { expiresIn: "1h" }
@@ -53,7 +50,7 @@ const login = async (req: Request, res: Response) => {
 
         res.status(200).json({
             message: "Đăng nhập thành công",
-            accesToken: accesToken,
+            accessToken: accessToken,
             authorize: true
         });
 
@@ -63,18 +60,15 @@ const login = async (req: Request, res: Response) => {
     }
 };
 
-// Tạo user
 const createUser = async (req: Request, res: Response) => {
     try {
         const { username, password, room, email, } = req.body;
 
-        // Kiểm tra username có tồn tại chưa
         const existingUser = await User.findOne({ username });
         if (existingUser) {
             return res.status(400).json({ message: "Username đã tồn tại" });
         }
 
-        // Tạo user mới — KHÔNG cần tạo id thủ công -> Object_id
         const newUser = new User({
             username,
             password,
@@ -115,16 +109,14 @@ const getUserById = async (req: Request, res: Response) => {
 
 const getUser = async (req: Request, res: Response) => {
     try {
-        const limitDefault = 10;
 
-        // 1. Convert tất cả tham số sang số: có thể là NaN nếu client nhập sai
+        const limitDefault = 10;
         const limitRaw = Number(req.query.limit);
         const offsetRaw = Number(req.query.offset);
         const pageRaw = Number(req.query.page);
         const skipRaw = Number(req.query.skip);
         const searchText = req.query.search as string;
 
-        // 2. VALIDATION – chỉ kiểm tra nếu client có gửi params
         if (req.query.limit !== undefined && (isNaN(limitRaw)) || limitRaw < 0) {
             return res.status(400).json({ message: 'limit must be number' });
         }
@@ -141,7 +133,6 @@ const getUser = async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'skip must be non-negative number' });
         }
 
-        // 3. SET GIÁ TRỊ CUỐI CÙNG (nếu user không nhập thì xài mặc định)
         const limit = !isNaN(limitRaw) ? limitRaw : limitDefault;
         const offset = !isNaN(offsetRaw) ? offsetRaw : 0;
 
@@ -153,7 +144,6 @@ const getUser = async (req: Request, res: Response) => {
             ? skipRaw
             : (page - 1) * limit;
 
-        // 4. Tạo match filter
         const matchStage = searchText
             ? {
                 $match: {

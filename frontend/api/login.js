@@ -13,18 +13,29 @@ async function login() {
 
         const data = await res.json();
 
+        console.log("Dữ liệu từ server:", data);
+
         if (!res.ok) {
             console.log(data)
             alert("Sai username hoặc password")
             return;
         }
 
-        console.log(data)
-        alert("Đăng nhập thành công");
+        const tokenValue = data.accessToken || data.token;
 
-        localStorage.setItem("token", data.token);
+        if (tokenValue) {
+            console.log("Token lấy được:", tokenValue);
 
-        window.location.href = "view.html";
+            
+            // QUAN TRỌNG: Phải lưu key là "token" vì file view.js đang gọi localStorage.getItem("token")
+            localStorage.setItem("token", tokenValue);
+
+            alert("Đăng nhập thành công");
+            window.location.href = "view.html";
+        } else {
+            console.error("Lỗi: Server trả về thành công nhưng không có accessToken", data);
+            alert("Lỗi hệ thống: Không tìm thấy token đăng nhập.");
+        }
 
     } catch (err) {
         console.error(err);
