@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản Lý Nhà Trọ</title>
     <link rel="stylesheet" href="../css/view.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+        integrity="..." crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 
 <body>
@@ -14,7 +15,7 @@
         <div class="glass-panel top-nav">
             <div class="brand"><i class="fas fa-building"></i> QUẢN LÝ NHÀ TRỌ</div>
             <div class="nav-links">
-                 <a href="#" class="nav-item active"><i class="fas fa-home"></i>Tổng quan</a>
+                <a href="#" class="nav-item active"><i class="fas fa-home"></i>Tổng quan</a>
                 <a href="#" class="nav-item"><i class="fas fa-door-open"></i>Phòng</a>
                 <a href="#" class="nav-item"><i class="fas fa-file-invoice-dollar"></i>Hóa đơn</a>
                 <a href="#" class="nav-item"><i class="fas fa-chart-pie"></i>Báo cáo</a>
@@ -22,6 +23,10 @@
             <div class="user-info">
                 <i class="fas fa-user-circle" style="font-size: 24px; margin-right: 10px;"></i>
                 <span>Admin</span>
+                <button class="action-btn logout-btn" id="logoutBtn" title="Đăng xuất khỏi hệ thống">
+                    Đăng xuất
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
             </div>
         </div>
 
@@ -47,7 +52,7 @@
                 </div>
                 <div class="stat-icon" style="color: #ffeaa7;"><i class="fas fa-bookmark"></i></div>
             </div>
-             <div class="glass-panel stat-card" style="border-left-color: #ff7675;">
+            <div class="glass-panel stat-card" style="border-left-color: #ff7675;">
                 <div class="stat-info">
                     <h3>Sự cố phòng</h3>
                     <p id="statIncidents" style="color: #ff7675;">0 Vấn đề</p>
@@ -60,10 +65,14 @@
             <div class="toolbar">
                 <div class="filter-group">
                     <div style="font-weight: bold; margin-right: 10px; color: #00ffcc;">Bộ lọc:</div>
-                    <label class="checkbox-item"><input type="checkbox" class="filter-cb" data-filter="all" checked> Tất cả</label>
-                    <label class="checkbox-item"><input type="checkbox" class="filter-cb" data-filter="occupied"> Đang ở</label>
-                    <label class="checkbox-item"><input type="checkbox" class="filter-cb" data-filter="empty"> Đang trống</label>
-                    <label class="checkbox-item"><input type="checkbox" class="filter-cb" data-filter="debt"> Sắp hết hạn/Nợ</label>
+                    <label class="checkbox-item"><input type="checkbox" class="filter-cb" data-filter="all" checked> Tất
+                        cả</label>
+                    <label class="checkbox-item"><input type="checkbox" class="filter-cb" data-filter="occupied"> Đang
+                        ở</label>
+                    <label class="checkbox-item"><input type="checkbox" class="filter-cb" data-filter="empty"> Đang
+                        trống</label>
+                    <label class="checkbox-item"><input type="checkbox" class="filter-cb" data-filter="debt"> Sắp hết
+                        hạn/Nợ</label>
                 </div>
 
                 <div class="filter-group">
@@ -71,7 +80,8 @@
                         <i class="fas fa-search"></i>
                         <input type="text" id="searchInput" placeholder="Tìm tên phòng...">
                     </div>
-                    <button class="action-btn" style="background-color: #0984e3;"><i class="fas fa-file-excel"></i> Xuất Excel</button>
+                    <button class="action-btn" style="background-color: #0984e3;"><i class="fas fa-file-excel"></i> Xuất
+                        Excel</button>
                     <button class="action-btn" id="openCreateRoomBtn"><i class="fas fa-plus"></i> Thêm phòng</button>
                 </div>
             </div>
@@ -86,14 +96,17 @@
                             <th>Giá thuê</th>
                             <th>Tiền cọc</th>
                             <th>Khách thuê</th>
-                            <th>Ngày lập HĐ</th> <th>Hợp đồng</th>
-                            <th>Tình trạng</th> <th>Tạo Bill</th> </tr>
+                            <th>Ngày lập HĐ</th>
+                            <th>Hợp đồng</th>
+                            <th>Tình trạng</th>
+                            <th>Hành động</th>
+                        </tr>
                     </thead>
                     <tbody>
-                        </tbody>
+                    </tbody>
                 </table>
             </div>
-            
+
             <div class="table-footer-info">
                 Hiển thị danh sách phòng | Copyright © Quản lý nhà trọ Galaxy
             </div>
@@ -112,12 +125,12 @@
                     <label>Tên Phòng (Room Num)</label>
                     <input type="text" id="inpRoomNum" placeholder="VD: Phòng 101">
                 </div>
-                
+
                 <div class="form-group">
                     <label>Nhóm (Group)</label>
                     <input type="text" id="inpGroup" placeholder="VD: Tầng 1">
                 </div>
-                
+
                 <div class="form-group">
                     <label>Giá thuê</label>
                     <input type="text" id="inpPrice" placeholder="VD: 3.000.000">

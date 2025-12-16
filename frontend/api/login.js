@@ -26,8 +26,6 @@ async function login() {
         if (tokenValue) {
             console.log("Token lấy được:", tokenValue);
 
-            
-            // QUAN TRỌNG: Phải lưu key là "token" vì file view.js đang gọi localStorage.getItem("token")
             localStorage.setItem("token", tokenValue);
 
             alert("Đăng nhập thành công");
