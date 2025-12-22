@@ -1,15 +1,16 @@
 import mongoose from "mongoose";
-import { tr } from "zod/v4/locales";
 
 const billSchema = new mongoose.Schema({
-    roomNum: { type: String, required: true },
-    price: { type: String, required: true },
-    elecPrice: { type: String, required: true },
-    waterPrice: { type: String, required: true },
-    wifiPrice: { type: String, required: true },
-    totalPrice: { type: String },
-    status: { type: String },
-    getBill: { type: String }
+    roomNum: { type: String, required: true, unique: true },
+    price: { type: Number, required: true },
+    deposit: { type: Number, required: true },
+    elecPrice: { type: Number, required: true },
+    waterPrice: { type: Number, required: true },
+    wifiPrice: { type: Number, required: true },
+    totalPrice: { type: Number },
+    status: {
+        type: String, required : true
+    }
 },
     { timestamps: true }
 )

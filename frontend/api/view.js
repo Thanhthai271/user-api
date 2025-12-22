@@ -1,21 +1,44 @@
 // view.js
 import BaseURL from "./route.js";
 
+// --- 1. SELECTORS ---
 const selectors = {
+    // --- Navigation & Sections ---
+    navItems: document.querySelectorAll('.nav-item'),
+    dashboardSection: document.querySelector('.body-nav'), 
+    billSection: document.getElementById('billListSection'), 
+    imgSection: document.querySelector('.image-gallery-grid'),
+
+    // --- Filter & Search ---
     checkboxes: document.querySelectorAll('.filter-cb'),
-    allCheckbox: document.querySelector('.filter-cb[data-filter="all"]'),
     searchInput: document.getElementById('searchInput'),
+
+    // --- Room Table ---
     tableBody: document.querySelector('#roomTable tbody'),
     footerInfo: document.querySelector('.table-footer-info'),
 
+    // --- Bill Table ---
+    billTableBody: document.getElementById('billTableBody'),
+
+    // --- Modal Create/Edit Room ---
     modal: document.getElementById("createRoomModal"),
     modalTitle: document.getElementById("modalTitle"),
     openBtn: document.getElementById("openCreateRoomBtn"),
     closeBtn: document.querySelector(".close-btn"),
     submitBtn: document.getElementById("submitCreateRoomBtn"),
     isEditMode: document.getElementById("isEditMode"),
+
+    // --- Modal Create Bill ---
+    billModal: document.getElementById("createBillModal"),
+    closeBillModal: document.querySelector(".close-bill-btn"),
+    submitBillBtn: document.getElementById("submitCreateBillBtn"),
+    billRoomNumInput: document.getElementById("billRoomNum"),
+    displayRoomNumSpan: document.getElementById("displayRoomNum"),
+
+    // --- User Actions ---
     logoutBtn: document.getElementById("logoutBtn"),
 
+    // --- Inputs Room ---
     inputs: {
         roomNum: document.getElementById("inpRoomNum"),
         group: document.getElementById("inpGroup"),
@@ -25,256 +48,310 @@ const selectors = {
         checkinDate: document.getElementById("inpCheckinDate"),
         contractTerm: document.getElementById("inpContractTerm"),
         status: document.getElementById("inpStatus")
+    },
+
+    // --- Inputs Bill ---
+    billInputs: {
+        oldElectric: document.getElementById("inpOldElectric"),
+        newElectric: document.getElementById("inpNewElectric"),
+        electricUnit: document.getElementById("inpElectricUnit"),
+        waterPrice: document.getElementById("inpWaterPrice"),
+        wifiPrice: document.getElementById("inpWifiPrice")
     }
 };
 
-//api
+// --- HELPER FUNCTIONS ---
+const formatVND = (num) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(num);
+
+const extractRoomNumber = (name) => {
+    if (!name) return 0;
+    const match = name.match(/\d+/); 
+    return match ? parseInt(match[0], 10) : 0;
+};
+
+// Hàm logic lọc dữ liệu từ checkbox
+const filterRoomsLogic = (rooms) => {
+    const activeCheckboxes = Array.from(selectors.checkboxes)
+        .filter(cb => cb.checked)
+        .map(cb => cb.value);
+
+    // Nếu chọn "Tất cả" hoặc không chọn gì, hiện tất cả
+    if (activeCheckboxes.includes('all') || activeCheckboxes.length === 0) return rooms;
+
+    return rooms.filter(room => {
+        const isOccupied = room.status && room.status.toLowerCase().includes('đang ở');
+        
+        if (activeCheckboxes.includes('occupied') && isOccupied) return true;
+        if (activeCheckboxes.includes('empty') && !isOccupied) return true;
+        // Có thể thêm logic 'debt' (nợ) hoặc 'expiring' tại đây nếu backend trả về data
+        return false;
+    });
+};
+
+// --- 2. API SERVICES ---
 
 function getAuthHeaders() {
     const token = localStorage.getItem("token");
-    if (!token) return console.warn("⚠️ Chưa có Token");
     return {
         'Content-Type': 'application/json',
         'Authorization': token ? `Bearer ${token}` : ''
     };
 }
 
+const createRoomService = async (payload) => {
+    const response = await fetch(`${BaseURL}/createRoom`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+    return await response.json();
+};
+
 const getRoomsService = async (searchText = '') => {
     try {
-        let url = `${BaseURL}/getRoom?limit=10`
-        if (searchText) {
-            url += `&search = ${encodeURIComponent(searchText)}`
-        }
-        const response = await fetch(url,
-            {
-                method: 'GET',
-                headers: getAuthHeaders()
-            }
-        )
-        const data = await response.json();
-        if (response.status === 401 || response.status === 403) {
-            alert('Hết phiên đăng nhập.Hãy đăng nhập lại')
-            window.location.href = 'login.html'
-            return null
-        }
-        if (!response.ok) {
-            throw new Error(data.message || 'Lỗi tải dữ liệu')
-        }
-        return data
+        let url = `${BaseURL}/getRoom?limit=100${searchText ? `&search=${encodeURIComponent(searchText)}` : ''}`;
+        const response = await fetch(url, { method: 'GET', headers: getAuthHeaders() });
+        if (response.status === 401 || response.status === 403) return handleLogout();
+        return await response.json();
     } catch (error) {
-        console.error('Error : ', error)
-        return { error: true, message: error.message }
+        console.error('Error:', error);
+        return { error: true, message: error.message };
     }
-}
-
-const createRoomService = async (payload) => {
-    try {
-
-        const response = await fetch(`${BaseURL}/createRoom`,
-            {
-                method: 'POST',
-                headers: getAuthHeaders(),
-                body: JSON.stringify(payload)
-            }
-        )
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.message || 'Lỗi tạo dữ liệu')
-        }
-        return { success: true, data }
-
-    } catch (error) {
-        console.error('Error : ', error)
-        return { error: true, message: error.message }
-    }
-}
+};
 
 const updateRoomService = async (roomNum, payload) => {
+    const response = await fetch(`${BaseURL}/updateRoom/${encodeURIComponent(roomNum)}`, { method: 'PATCH', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+    return await response.json();
+};
+
+const deleteRoomService = async (roomNum) => {
+    const response = await fetch(`${BaseURL}/deleteRoom/${encodeURIComponent(roomNum)}`, { method: 'DELETE', headers: getAuthHeaders() });
+    return await response.json();
+};
+
+const createBillService = async (payload) => {
     try {
-        const response = await fetch(`${BaseURL}/updateRoom/${encodeURIComponent(roomNum)}`,
-            {
-                method: 'PATCH',
-                headers: getAuthHeaders(),
-                body: JSON.stringify(payload)
-            }
-        )
-        const data = await response.json()
-        if (!response.ok) {
-            throw new Error(data.message || 'Lỗi cập nhật dữ liệu')
-        }
-        return { success: true, data : data }
-    } catch (error) {
-        console.error('Error : ', error)
-        return { success: false, message: error.message }
-    }
-}
+        const response = await fetch(`${BaseURL}/createBill`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+        return await response.json();
+    } catch (error) { return { message: error.message }; }
+};
 
-const deleteService = async (roomNum) => {
+const getAllBillsService = async () => {
     try {
-        const response = await fetch(`${BaseURL}/deleteRoom/${encodeURIComponent(roomNum)}`, 
-            {
-                method : 'DELETE',
-                headers : getAuthHeaders()
-            }
-        )
+        const response = await fetch(`${BaseURL}/getAllBills`, { method: 'GET', headers: getAuthHeaders() });
+        if (!response.ok) throw new Error(`Server Error: ${response.status}`);
+        return await response.json();
+    } catch (error) { return { success: false, message: error.message }; }
+};
 
-        const data = await response.json()
-
-        if(!response.ok) {
-            throw new Error(data.message || 'Lỗi xóa phòng')
-        }
-        return {success : true, message : 'Đã xóa phòng'}
-
-    } catch(error){
-        console.error('Error : ', error)
-        return {success : false, message : error.message}
-    }
-}
-
-const logoutService = async () => {
+const payBillService = async (billId) => {
     try {
-        const headers = getAuthHeaders()
+        const res = await fetch(`${BaseURL}/payBill/${encodeURIComponent(billId)}`, { method: "PATCH", headers: getAuthHeaders() });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Lỗi Thanh Toán');
+        return data;
+    } catch (error) { return { message: error.message }; }
+};
 
-        if(!headers.Authorization){
-            localStorage.removeItem('token')
-            return {success : true, message : 'Không tìm thấy token. Đã chuyển hướng'}
-        }
+const deleteBillService = async (billId) => {
+    try {
+        const res = await fetch(`${BaseURL}/deleteBill/${encodeURIComponent(billId)}`, { method: 'DELETE', headers: getAuthHeaders() });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Lỗi xóa bill');
+        return data;
+    } catch (error) { return { message: error.message }; }
+};
 
-        const response = await fetch(`${BaseURL}/logout`, {
-            method: 'POST',
-            headers: headers
-        })
+// --- 3. LOGIC GIAO DIỆN (VIEW) ---
 
-        localStorage.removeItem('token')
-        const data = await response.json()
+window.switchTab = (tabName) => {
+    selectors.navItems.forEach(item => item.classList.remove('active'));
 
-        if (!response.ok || response.status !== 401) {
-            throw new Error(data.message || 'Lỗi đăng xuất')
-        }
-        return { success: true, message: data.message || 'Đăng xuất thành công' }
+    if (tabName === 'bills') {
+        selectors.dashboardSection.style.display = 'none';
+        selectors.imgSection.style.display = 'none';
+        selectors.billSection.style.display = 'block';
+        
+        // Reset animation cho mượt
+        selectors.billSection.style.animation = 'none';
+        selectors.billSection.offsetHeight; 
+        selectors.billSection.style.animation = null; 
 
-    } catch (error) {
-        console.error('Error : ', error)
-        localStorage.removeItem('token')
-        return { success: false, message: error.message || 'Lỗi server' }
+        initBillList();
+        if (selectors.navItems[2]) selectors.navItems[2].classList.add('active');
+    } else if (tabName == 'home') {
+        selectors.imgSection.style.display = 'grid'
+        selectors.dashboardSection.style.display = 'none';
+        selectors.billSection.style.display = 'none';
+        if (selectors.navItems[0]) selectors.navItems[0].classList.add('active');
+    } else {
+        selectors.dashboardSection.style.display = 'block';
+        selectors.imgSection.style.display = 'none';
+        selectors.billSection.style.display = 'none';
+        initApp();
+        if (selectors.navItems[1]) selectors.navItems[1].classList.add('active');
     }
-}
+};
 
-window.handleDelete = async (roomNum) => {
-    if(confirm(`Ban có chắc chắn muốn xóa phòng ${roomNum} không ?`)){
-        const res = await deleteService(roomNum)
-        if(res.success){
-            alert(`Đã xóa thành công ${roomNum}`)
-            initApp()
-        }
-    }else {
-        alert('Có lỗi xảy ra khi xóa phòng : ' + res.message)
+window.handleViewBill = (roomNum) => window.switchTab('bills');
+
+window.handleOpenCreateBill = (roomNum) => {
+    selectors.billRoomNumInput.value = roomNum;
+    if (selectors.displayRoomNumSpan) selectors.displayRoomNumSpan.innerText = roomNum;
+    selectors.billInputs.oldElectric.value = '';
+    selectors.billInputs.newElectric.value = '';
+    selectors.billInputs.waterPrice.value = '';
+    selectors.billInputs.wifiPrice.value = '';
+    if (!selectors.billInputs.electricUnit.value) selectors.billInputs.electricUnit.value = 3500;
+    selectors.billModal.style.display = "block";
+};
+
+window.handlePayBill = async (billId) => {
+    if (confirm("Xác nhận khách đã thanh toán hóa đơn này?")) {
+        const res = await payBillService(billId);
+        if (res.success) {
+            alert("Thanh toán thành công!");
+            initBillList();
+        } else alert("Lỗi: " + res.message);
     }
-}
+};
 
-async function handleLogout() {
-    const res = await logoutService()
-    alert(res.data || 'Đã đăng xuất')
-    window.location.href = 'login.html'
-}
+window.handleDeleteBill = async (billId) => {
+    if(confirm('Bạn có chắc chắn muốn xóa bill này ?')) {
+        const res = await deleteBillService(billId);
+        if(res.success) {
+            alert("Đã xóa thành công!");
+            initBillList();
+        } else alert('Lỗi : ' + res.message);
+    }
+};
 
-function renderTable(data) {
+// --- RENDER TABLES ---
+
+function renderRoomTable(data) {
     selectors.tableBody.innerHTML = '';
-
-    if (!data || (data.error)) {
-        selectors.tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center; color:#ff7675; padding: 20px;">${data ? data.message : 'Lỗi kết nối đến máy chủ'}</td></tr>`;
+    if (!data || data.error) {
+        selectors.tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center; color:#ff7675;">${data?.message || 'Lỗi kết nối server'}</td></tr>`;
         return;
     }
 
     const rooms = data.rooms || [];
-    const pagination = data.pagination;
+    rooms.forEach((room) => {
+        const roomName = room.roomNum;
+        const isOccupied = room.status && room.status.toLowerCase().includes('đang ở');
+        const hasBill = room.createBill === "YES";
 
-    if (rooms.length === 0) {
-        selectors.tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center; color:#aaa; padding: 20px;">Không tìm thấy phòng nào.</td></tr>`;
-        return;
-    }
+        let actionBtn = '';
+        let statusText = '';
 
-    rooms.forEach((room, index) => {
-        const roomName = room.roomNum || `Phòng ${index + 1}`;
-        const contractDate = room.checkinDate || 'Chưa có';
-
-        let paymentStatusHtml = '<span class="badge badge-paid">Đã thanh toán</span>';
-        let rowTags = 'paid';
-
-        const billTextForLogic = room.createBill || '';
-        if (billTextForLogic.toLowerCase().includes('nợ') || billTextForLogic.toLowerCase().includes('chưa')) {
-            paymentStatusHtml = '<span class="badge badge-unpaid">CHƯA THANH TOÁN</span>';
-            rowTags = 'debt';
+        if (isOccupied) {
+            if (hasBill) {
+                statusText = '<span class="badge badge-unpaid">CHỜ THANH TOÁN</span>';
+                actionBtn = `<button class="btn-create-bill" style="background:#f1c40f; color:#000;" onclick="window.handleViewBill('${roomName}')">XEM BILL</button>`;
+            } else {
+                statusText = '<span class="badge" style="background:#3498db">CHƯA TẠO BILL</span>';
+                actionBtn = `<button class="btn-create-bill" onclick="window.handleOpenCreateBill('${roomName}')">TẠO BILL</button>`;
+            }
+        } else {
+            statusText = '<span class="badge" style="background:#95a5a6">TRỐNG</span>';
+            actionBtn = `<button class="btn-create-bill" disabled style="opacity:0.3; cursor:not-allowed; background:#555;">TRỐNG</button>`;
         }
-
-        if (room.status && room.status.toLowerCase().includes('đang ở')) rowTags += ' occupied';
-        else rowTags += ' empty';
 
         const tr = document.createElement('tr');
         tr.dataset.room = JSON.stringify(room);
-        tr.setAttribute('data-status', rowTags);
-
-tr.innerHTML = `
-    <td><input type="checkbox" style="accent-color: #00ffcc;"></td>
-    <td>
-        <div class="room-name">
-            <div class="room-icon"><i class="fas fa-home"></i></div>
-            ${roomName}
-        </div>
-    </td>
-    <td>${room.group || 'Chưa phân nhóm'}</td>
-    <td style="font-weight:bold;">${room.price}</td>
-    <td>${room.deposit}</td>
-    <td><i class="fas fa-user-friends" style="color:#aaa; margin-right:5px;"></i> ${room.occupants}</td>
-    <td>${contractDate}</td> <td>${room.contractTerm}</td>
-    <td>${paymentStatusHtml}</td> 
-    
-    <td class="action-cell">
-        <button class="btn-action btn-edit" onclick="window.openEditModal(this.closest('tr'))" title="Sửa phòng">
-            <i class="fas fa-edit"></i>
-        </button>
-        <button class="btn-action btn-delete" onclick="window.handleDelete('${room.roomNum}')" title="Xóa phòng">
-            <i class="fas fa-trash-alt"></i>
-        </button>
-        <button class="btn-action btn-create-bill" onclick="window.handleBill('${roomName}')" title="Tạo Bill">
-            <i class="fas fa-file-invoice"></i> Bill
-        </button>
-    </td>
-`;
-selectors.tableBody.appendChild(tr);
+        tr.innerHTML = `
+            <td><input type="checkbox"></td>
+            <td>
+                <div class="room-name">
+                    <div class="room-icon"><i class="fas fa-home"></i></div>
+                    ${roomName}
+                </div>
+            </td>
+            <td>${room.group || '-'}</td>
+            <td style="font-weight:bold;">${room.price}</td>
+            <td>${room.deposit}</td>
+            <td><i class="fas fa-user-friends"></i> ${room.occupants}</td>
+            <td>${room.checkinDate || '-'}</td>
+            <td>${room.contractTerm || '-'}</td>
+            <td>${statusText}</td> 
+            <td class="action-cell">
+                <button class="btn-action" onclick="window.openEditModal(this.closest('tr'))"><i class="fas fa-edit"></i></button>
+                <button class="btn-action" onclick="window.handleDelete('${roomName}')"><i class="fas fa-trash-alt"></i></button>
+                ${actionBtn}
+            </td>
+        `;
+        selectors.tableBody.appendChild(tr);
     });
+}
 
-    if (selectors.footerInfo && pagination) {
-        selectors.footerInfo.innerText = `Hiển thị ${rooms.length} / ${pagination.totalRoom} phòng | Trang ${pagination.page}`;
+function renderBillTable(bills) {
+    selectors.billTableBody.innerHTML = '';
+    if (!bills || bills.length === 0) {
+        selectors.billTableBody.innerHTML = `<tr><td colspan="9" style="text-align:center;">Chưa có hóa đơn nào</td></tr>`;
+        return;
+    }
+
+    bills.forEach(bill => {
+        const isPaid = bill.status === 'DA_THANH_TOAN';
+        const statusHtml = isPaid
+            ? `<span style="color:#2ecc71; font-weight:bold;">Đã Thanh Toán</span>`
+            : `<span style="color:#e74c3c; font-weight:bold;">Chưa Thanh Toán</span>`;
+
+        const actionHtml = isPaid
+            ? `<button disabled style="opacity:0.5">Hoàn tất</button>`
+            : `<button class="btn-create-bill" onclick="window.handlePayBill('${bill._id}')">Thanh toán</button>`;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>
+                <div class="room-name">
+                    <div class="room-icon"><i class="fas fa-home"></i></div>
+                    ${bill.roomNum}
+                </div>
+            </td>
+            <td><strong>${bill.elecPrice}</strong></td>
+            <td><strong>${bill.waterPrice}</strong></td>
+            <td><strong>${bill.wifiPrice}</strong></td>
+            <td style="color:#00ffcc; font-weight:bold;">${formatVND(bill.totalPrice)}</td>
+            <td>${formatVND(bill.deposit)}</td>
+            <td>${new Date(bill.createdAt).toLocaleDateString('vi-VN')}</td>
+            <td>${statusHtml}</td>
+            <td>
+                ${actionHtml}
+                <button class="btn-action" onclick="window.handleDeleteBill('${bill._id}')"><i class="fas fa-trash-alt"></i></button>
+            </td>
+        `;
+        selectors.billTableBody.appendChild(tr);
+    });
+}
+
+// --- XỬ LÝ SUBMIT ---
+
+if (selectors.submitBillBtn) {
+    selectors.submitBillBtn.onclick = async () => {
+        const payload = {
+            roomNum: selectors.billRoomNumInput.value,
+            oldElectric: Number(selectors.billInputs.oldElectric.value),
+            newElectric: Number(selectors.billInputs.newElectric.value),
+            electricUnit: Number(selectors.billInputs.electricUnit.value),
+            waterPrice: Number(selectors.billInputs.waterPrice.value),
+            wifiPrice: Number(selectors.billInputs.wifiPrice.value)
+        };
+
+        if (payload.newElectric < payload.oldElectric) return alert("Số điện mới phải lớn hơn số điện cũ!");
+
+        selectors.submitBillBtn.innerText = 'Đang xử lý...';
+        selectors.submitBillBtn.disabled = true;
+
+        const res = await createBillService(payload);
+        selectors.submitBillBtn.innerText = 'XÁC NHẬN & KHẤU TRỪ CỌC';
+        selectors.submitBillBtn.disabled = false;
+
+        if (res.success || res.message?.includes('thành công')) {
+            alert("Tạo hóa đơn thành công!");
+            selectors.billModal.style.display = "none";
+            initApp();
+        } else alert("Lỗi: " + res.message);
     }
 }
 
-function openCreateModal() {
-    selectors.isEditMode.value = "false";
-    selectors.modalTitle.innerText = "THÊM PHÒNG MỚI";
-    selectors.inputs.roomNum.disabled = false;
-    toggleModal(true);
-}
-
-window.openEditModal = (trElement) => {
-    const room = JSON.parse(trElement.dataset.room);
-    selectors.isEditMode.value = "true";
-    selectors.modalTitle.innerText = `SỬA PHÒNG: ${room.roomNum}`;
-
-    selectors.inputs.roomNum.value = room.roomNum;
-    selectors.inputs.roomNum.disabled = true;
-    selectors.inputs.group.value = room.group;
-    selectors.inputs.price.value = room.price;
-    selectors.inputs.deposit.value = room.deposit;
-    selectors.inputs.occupants.value = room.occupants;
-    selectors.inputs.checkinDate.value = room.checkinDate;
-    selectors.inputs.contractTerm.value = room.contractTerm;
-    selectors.inputs.status.value = room.status;
-
-    toggleModal(true);
-}
-
-async function handleSubmit() {
+async function handleSubmitRoom() {
     const isEdit = selectors.isEditMode.value === "true";
     const payload = {
         roomNum: selectors.inputs.roomNum.value,
@@ -288,58 +365,44 @@ async function handleSubmit() {
     };
 
     if (!payload.roomNum) return alert("Vui lòng nhập tên phòng!");
+    selectors.submitBtn.disabled = true;
+    const res = isEdit ? await updateRoomService(payload.roomNum, payload) : await createRoomService(payload);
+    selectors.submitBtn.disabled = false;
 
-    const submitBtn = selectors.submitBtn;
-    const originalText = submitBtn.innerText;
-    submitBtn.innerText = "Đang xử lý...";
-    submitBtn.disabled = true;
-
-    let res;
-    if (isEdit) {
-        res = await updateRoomService(payload.roomNum, payload);
-    } else {
-        res = await createRoomService(payload);
-    }
-
-    submitBtn.innerText = originalText;
-    submitBtn.disabled = false;
-
-    if (res.success) {
-        alert(isEdit ? "Cập nhật phòng thành công!" : "Thêm phòng mới thành công!");
+    if (res.message?.includes('success') || res.room) {
+        alert(isEdit ? "Cập nhật thành công!" : "Thêm phòng thành công!");
         toggleModal(false);
         initApp();
-    } else {
-        alert("Có lỗi xảy ra: " + res.message);
+    } else alert("Lỗi: " + res.message);
+}
+
+// --- INIT APP ---
+
+async function initApp(search = '') {
+    if (!localStorage.getItem("token")) return window.location.href = "login.html";
+    
+    const data = await getRoomsService(search);
+    if (data && data.rooms) {
+        // 1. Sắp xếp
+        data.rooms.sort((a, b) => extractRoomNumber(a.roomNum) - extractRoomNumber(b.roomNum));
+        
+        // 2. Lọc
+        const filteredRooms = filterRoomsLogic(data.rooms);
+        
+        // 3. Render
+        renderRoomTable({ ...data, rooms: filteredRooms });
     }
 }
 
-window.handleBill = (roomNum) => {
-    console.log(`Tạo bill cho phòng: ${roomNum}`);
-    alert(`Chức năng tạo bill cho ${roomNum} đang phát triển.`);
+async function initBillList() {
+    const res = await getAllBillsService();
+    if (res.success) renderBillTable(res.data);
+    else alert("Không thể tải danh sách hóa đơn");
 }
 
-function setupFilters() {
-    selectors.checkboxes.forEach(cb => {
-        cb.addEventListener('change', function () {
-            if (this.checked) selectors.checkboxes.forEach(c => { if (c !== this) c.checked = false; });
-            else { if (selectors.allCheckbox) { selectors.allCheckbox.checked = true; selectors.allCheckbox.dispatchEvent(new Event('change')); } return; }
-
-            const type = this.getAttribute('data-filter');
-            document.querySelectorAll('#roomTable tbody tr').forEach(row => {
-                const tags = row.getAttribute('data-status');
-                row.style.display = (type === 'all' || (tags && tags.includes(type))) ? '' : 'none';
-            });
-        });
-    });
-}
-
-let searchTimeout;
-function setupSearch() {
-    if (!selectors.searchInput) return;
-    selectors.searchInput.addEventListener('input', (e) => {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => { initApp(e.target.value); }, 400);
-    });
+function handleLogout() {
+    localStorage.removeItem('token');
+    window.location.href = 'login.html';
 }
 
 function toggleModal(show) {
@@ -350,28 +413,73 @@ function toggleModal(show) {
     }
 }
 
-async function initApp(search = '') {
-    if (!localStorage.getItem("token")) {
-        window.location.href = "login.html";
-        return;
-    }
-    const data = await getRoomsService(search);
-    renderTable(data);
-}
-
+// --- DOM READY ---
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
-    setupFilters();
-    setupSearch();
 
-    if (selectors.openBtn) selectors.openBtn.onclick = openCreateModal;
+    // Event Checkbox
+    selectors.checkboxes.forEach(cb => {
+        cb.onchange = () => {
+            if (cb.value === 'all' && cb.checked) {
+                selectors.checkboxes.forEach(other => { if(other !== cb) other.checked = false; });
+            } else if (cb.checked) {
+                const allCb = Array.from(selectors.checkboxes).find(c => c.value === 'all');
+                if (allCb) allCb.checked = false;
+            }
+            initApp(selectors.searchInput.value);
+        };
+    });
+
+    if (selectors.navItems.length > 0) {
+        selectors.navItems[0].onclick = () => window.switchTab('home')
+        selectors.navItems[1].onclick = () => window.switchTab('rooms');
+        selectors.navItems[2].onclick = () => window.switchTab('bills');
+    }
+
+    let timeout;
+    selectors.searchInput.oninput = (e) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => initApp(e.target.value), 500);
+    };
+
+    if (selectors.openBtn) selectors.openBtn.onclick = () => {
+        selectors.inputs.roomNum.disabled = false;
+        selectors.modalTitle.innerText = "THÊM PHÒNG MỚI";
+        toggleModal(true);
+    };
     if (selectors.closeBtn) selectors.closeBtn.onclick = () => toggleModal(false);
-    if (selectors.submitBtn) selectors.submitBtn.onclick = handleSubmit;
-    window.onclick = (e) => { if (e.target == selectors.modal) toggleModal(false); };
+    if (selectors.submitBtn) selectors.submitBtn.onclick = handleSubmitRoom;
+    if (selectors.closeBillModal) selectors.closeBillModal.onclick = () => selectors.billModal.style.display = "none";
     if (selectors.logoutBtn) selectors.logoutBtn.onclick = handleLogout;
 
-    selectors.tableBody.addEventListener('dblclick', (e) => {
-        const tr = e.target.closest('tr');
-        if (tr) window.openEditModal(tr);
-    });
+    window.onclick = (e) => {
+        if (e.target == selectors.modal) toggleModal(false);
+        if (e.target == selectors.billModal) selectors.billModal.style.display = "none";
+    };
+
+    window.handleDelete = async (roomNum) => {
+        if (confirm(`Bạn có chắc muốn xóa phòng ${roomNum}?`)) {
+            const res = await deleteRoomService(roomNum);
+            if (res.message?.includes('success') || res.success) {
+                alert("Xóa thành công!");
+                initApp();
+            } else alert("Lỗi: " + res.message);
+        }
+    };
+
+    window.openEditModal = (trElement) => {
+        const room = JSON.parse(trElement.dataset.room);
+        selectors.isEditMode.value = "true";
+        selectors.modalTitle.innerText = `SỬA PHÒNG: ${room.roomNum}`;
+        selectors.inputs.roomNum.value = room.roomNum;
+        selectors.inputs.roomNum.disabled = true;
+        selectors.inputs.group.value = room.group || "";
+        selectors.inputs.price.value = room.price || "";
+        selectors.inputs.deposit.value = room.deposit || "";
+        selectors.inputs.occupants.value = room.occupants || "";
+        selectors.inputs.checkinDate.value = room.checkinDate || "";
+        selectors.inputs.contractTerm.value = room.contractTerm || "";
+        selectors.inputs.status.value = room.status || "Trống";
+        toggleModal(true);
+    };
 });

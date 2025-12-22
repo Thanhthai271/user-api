@@ -12,7 +12,7 @@ app.use(cors({
     "http://localhost:5500",
     "http://127.0.0.1:5501",
     "http://localhost:5501"
-  ], // Cho phép domain frontend (VD: React)
+  ], // Cho phép domain frontend
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"], // Các phương thức được phép
   allowedHeaders: ["Content-Type", "Authorization"], // Header được phép
   credentials: true // Cho phép gửi cookie/token

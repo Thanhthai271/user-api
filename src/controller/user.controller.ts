@@ -209,7 +209,8 @@ const updateUser = async (req: Request, res: Response) => {
     try {
 
         const { id } = req.params;
-        const { username, password, phone, email, address, room } = req.body;
+        const { username, email } = req.params;
+        const { password, phone, address, room } = req.body;
 
         if (id) {
             if (!Types.ObjectId.isValid(id as string)) {

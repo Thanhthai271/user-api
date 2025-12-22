@@ -2,8 +2,6 @@ import { User } from "../users/user.models"
 import type { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { SECRET_KEY, SECRET_KEY_REFRESH } from "../utils/jwt";
-import { RefreshToken } from "../users/user.refreshToken";
-
 
 const refreshTokenController = async (req: Request, res: Response) => {
     try {

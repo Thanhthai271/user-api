@@ -43,7 +43,7 @@ const createRoom = async (req: Request, res: Response) => {
 
 const getRoom = async (req: Request, res: Response) => {
     try {
-        const limitDefault = 10; 
+        const limitDefault = 10;
         const limitRaw = Number(req.query.limit as string)
         const offsetRaw = Number(req.query.offset as string)
         const pageRaw = Number(req.query.page as string)
@@ -98,7 +98,7 @@ const getRoom = async (req: Request, res: Response) => {
         const totalPages = Math.ceil(totalRoom / limit)
 
         if (page > totalPages && totalRoom > 0) {
-             return res.status(400).json({ message: `Hiện tại chỉ có ${totalPages} trang` })
+            return res.status(400).json({ message: `Hiện tại chỉ có ${totalPages} trang` })
         }
 
         res.status(200).json({
@@ -120,16 +120,16 @@ const getRoom = async (req: Request, res: Response) => {
 
 const updateRoom = async (req: Request, res: Response) => {
     // SỬA LỖI: Phải destructuring { roomNum } thì mới lấy được giá trị string
-    const { roomNum } = req.params; 
+    const { roomNum } = req.params;
     const { group, price, deposit, occupants, checkinDate, contractTerm, status } = req.body
-    
+
     if (!roomNum) {
         return res.status(400).json({ message: 'roomNum not found' })
     }
 
     const updateRoom = await Room.findOneAndUpdate(
         { roomNum },
-        { roomNum, group, price, deposit, occupants, checkinDate, contractTerm, status },
+        { group, price, deposit, occupants, checkinDate, contractTerm, status },
         { new: true, upsert: false }
     )
 
