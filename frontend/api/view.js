@@ -1,13 +1,13 @@
-// view.js
 import BaseURL from "./route.js";
 
-// --- 1. SELECTORS ---
+// ---  SELECTORS ---
 const selectors = {
     // --- Navigation & Sections ---
     navItems: document.querySelectorAll('.nav-item'),
-    dashboardSection: document.querySelector('.body-nav'), 
-    billSection: document.getElementById('billListSection'), 
+    dashboardSection: document.querySelector('.body-nav'),
+    billSection: document.getElementById('billListSection'),
     imgSection: document.querySelector('.image-gallery-grid'),
+    reportSection: document.getElementById('reportSection'),
 
     // --- Filter & Search ---
     checkboxes: document.querySelectorAll('.filter-cb'),
@@ -16,6 +16,7 @@ const selectors = {
     // --- Room Table ---
     tableBody: document.querySelector('#roomTable tbody'),
     footerInfo: document.querySelector('.table-footer-info'),
+    reportBody: document.querySelector('#revenueReportTable'),
 
     // --- Bill Table ---
     billTableBody: document.getElementById('billTableBody'),
@@ -65,7 +66,7 @@ const formatVND = (num) => new Intl.NumberFormat('vi-VN', { style: 'currency', c
 
 const extractRoomNumber = (name) => {
     if (!name) return 0;
-    const match = name.match(/\d+/); 
+    const match = name.match(/\d+/);
     return match ? parseInt(match[0], 10) : 0;
 };
 
@@ -75,20 +76,18 @@ const filterRoomsLogic = (rooms) => {
         .filter(cb => cb.checked)
         .map(cb => cb.value);
 
-    // Nếu chọn "Tất cả" hoặc không chọn gì, hiện tất cả
     if (activeCheckboxes.includes('all') || activeCheckboxes.length === 0) return rooms;
 
     return rooms.filter(room => {
         const isOccupied = room.status && room.status.toLowerCase().includes('đang ở');
-        
+
         if (activeCheckboxes.includes('occupied') && isOccupied) return true;
         if (activeCheckboxes.includes('empty') && !isOccupied) return true;
-        // Có thể thêm logic 'debt' (nợ) hoặc 'expiring' tại đây nếu backend trả về data
         return false;
     });
 };
 
-// --- 2. API SERVICES ---
+// --- API SERVICES ---
 
 function getAuthHeaders() {
     const token = localStorage.getItem("token");
@@ -158,38 +157,45 @@ const deleteBillService = async (billId) => {
     } catch (error) { return { message: error.message }; }
 };
 
-// --- 3. LOGIC GIAO DIỆN (VIEW) ---
+//--- HANDLE ---
 
 window.switchTab = (tabName) => {
     selectors.navItems.forEach(item => item.classList.remove('active'));
 
     if (tabName === 'bills') {
-        selectors.dashboardSection.style.display = 'none';
-        selectors.imgSection.style.display = 'none';
-        selectors.billSection.style.display = 'block';
-        
-        // Reset animation cho mượt
-        selectors.billSection.style.animation = 'none';
-        selectors.billSection.offsetHeight; 
-        selectors.billSection.style.animation = null; 
-
-        initBillList();
+        selectors.billSection.style.display = 'block'
+        selectors.dashboardSection.style.display = 'none'
+        selectors.imgSection.style.display = 'none'
+        selectors.reportSection.style.display = 'none'
         if (selectors.navItems[2]) selectors.navItems[2].classList.add('active');
+        initBillList();
+
     } else if (tabName == 'home') {
         selectors.imgSection.style.display = 'grid'
-        selectors.dashboardSection.style.display = 'none';
-        selectors.billSection.style.display = 'none';
+        selectors.dashboardSection.style.display = 'none'
+        selectors.billSection.style.display = 'none'
+        selectors.reportSection.style.display = 'none'
         if (selectors.navItems[0]) selectors.navItems[0].classList.add('active');
+
+    } else if (tabName === 'report') {
+        selectors.reportSection.style.display = 'block'
+        selectors.dashboardSection.style.display = 'none'
+        selectors.imgSection.style.display = 'none'
+        selectors.billSection.style.display = 'none'
+        if (selectors.navItems[3]) selectors.navItems[3].classList.add('active')
+        initReportList()
+
+
     } else {
-        selectors.dashboardSection.style.display = 'block';
-        selectors.imgSection.style.display = 'none';
-        selectors.billSection.style.display = 'none';
-        initApp();
+        selectors.dashboardSection.style.display = 'block'
+        selectors.imgSection.style.display = 'none'
+        selectors.billSection.style.display = 'none'
+        selectors.reportSection.style.display = 'none'
         if (selectors.navItems[1]) selectors.navItems[1].classList.add('active');
+        initApp();
     }
 };
 
-window.handleViewBill = (roomNum) => window.switchTab('bills');
 
 window.handleOpenCreateBill = (roomNum) => {
     selectors.billRoomNumInput.value = roomNum;
@@ -213,13 +219,44 @@ window.handlePayBill = async (billId) => {
 };
 
 window.handleDeleteBill = async (billId) => {
-    if(confirm('Bạn có chắc chắn muốn xóa bill này ?')) {
+    if (confirm('Bạn có chắc chắn muốn xóa bill này ?')) {
         const res = await deleteBillService(billId);
-        if(res.success) {
+        if (res.success) {
             alert("Đã xóa thành công!");
             initBillList();
         } else alert('Lỗi : ' + res.message);
     }
+};
+
+window.onclick = (e) => {
+    if (e.target == selectors.modal) toggleModal(false);
+    if (e.target == selectors.billModal) selectors.billModal.style.display = "none";
+};
+
+window.handleDelete = async (roomNum) => {
+    if (confirm(`Bạn có chắc muốn xóa phòng ${roomNum}?`)) {
+        const res = await deleteRoomService(roomNum);
+        if (res.message?.includes('success') || res.success) {
+            alert("Xóa thành công!");
+            initApp();
+        } else alert("Lỗi: " + res.message);
+    }
+};
+
+window.openEditModal = (trElement) => {
+    const room = JSON.parse(trElement.dataset.room);
+    selectors.isEditMode.value = "true";
+    selectors.modalTitle.innerText = `SỬA PHÒNG: ${room.roomNum}`;
+    selectors.inputs.roomNum.value = room.roomNum;
+    selectors.inputs.roomNum.disabled = true;
+    selectors.inputs.group.value = room.group || "";
+    selectors.inputs.price.value = room.price || "";
+    selectors.inputs.deposit.value = room.deposit || "";
+    selectors.inputs.occupants.value = room.occupants || "";
+    selectors.inputs.checkinDate.value = room.checkinDate || "";
+    selectors.inputs.contractTerm.value = room.contractTerm || "";
+    selectors.inputs.status.value = room.status || "Trống";
+    toggleModal(true);
 };
 
 // --- RENDER TABLES ---
@@ -243,7 +280,7 @@ function renderRoomTable(data) {
         if (isOccupied) {
             if (hasBill) {
                 statusText = '<span class="badge badge-unpaid">CHỜ THANH TOÁN</span>';
-                actionBtn = `<button class="btn-create-bill" style="background:#f1c40f; color:#000;" onclick="window.handleViewBill('${roomName}')">XEM BILL</button>`;
+                actionBtn = `<button class="btn-create-bill" style="background:#f1c40f; color:#000;" onclick="window.switchTab('bills')">XEM BILL</button>`;
             } else {
                 statusText = '<span class="badge" style="background:#3498db">CHƯA TẠO BILL</span>';
                 actionBtn = `<button class="btn-create-bill" onclick="window.handleOpenCreateBill('${roomName}')">TẠO BILL</button>`;
@@ -321,6 +358,70 @@ function renderBillTable(bills) {
     });
 }
 
+function renderReportTable(bills) {
+    // Kiểm tra selector và làm sạch bảng
+    if (!selectors.reportBody) return;
+    selectors.reportBody.innerHTML = '';
+
+    // Lọc hóa đơn đã thanh toán
+    const paidBills = bills.filter(b => b.status === 'DA_THANH_TOAN');
+
+    if (!paidBills || paidBills.length === 0) {
+        selectors.reportBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Chưa có dữ liệu thanh toán để báo cáo</td></tr>`;
+        return;
+    }
+
+    const monthlyData = {};
+    let grandTotalRent = 0; // Đổi từ const sang let
+    let grandTotalService = 0; // Đổi từ const sang let
+
+    // Gom nhóm dữ liệu
+    paidBills.forEach(bill => {
+        const date = new Date(bill.createdAt);
+        const monthYear = `${date.getMonth() + 1}/${date.getFullYear()}`; // Thêm () vào getFullYear
+
+        if (!monthlyData[monthYear]) {
+            monthlyData[monthYear] = { rent: 0, service: 0, total: 0 };
+        }
+
+        // Ép kiểu Number để tránh lỗi cộng chuỗi
+        const total = Number(bill.totalPrice) || 0;
+        const serviceFee = (Number(bill.elecPrice) || 0) + (Number(bill.waterPrice) || 0) + (Number(bill.wifiPrice) || 0);
+        const rentFee = total - serviceFee;
+
+        monthlyData[monthYear].rent += rentFee;
+        monthlyData[monthYear].service += serviceFee;
+        monthlyData[monthYear].total += total;
+
+        grandTotalRent += rentFee;
+        grandTotalService += serviceFee;
+    });
+
+    // Vẽ các dòng dữ liệu
+    let htmlContent = '';
+    Object.keys(monthlyData).forEach(month => {
+        const data = monthlyData[month];
+        htmlContent += `
+        <tr>
+            <th>Tháng ${month}</th>
+            <th>${data.rent.toLocaleString()} đ</th>
+            <th>${data.service.toLocaleString()} đ</th>
+            <th><strong style="color: #00ffcc;">${data.total.toLocaleString()} đ</strong></th>
+            <th><span class="badge" style="background: #2ecc71;">Hoàn tất</span></th>
+        </tr>`;
+    });
+    selectors.reportBody.innerHTML = htmlContent;
+
+    // Cập nhật dòng tổng cộng (Đảm bảo các ID này tồn tại trong HTML Footer)
+    const elTotalRent = document.getElementById('totalRent');
+    const elTotalService = document.getElementById('totalService');
+    const elTotalRevenue = document.getElementById('totalRevenue');
+
+    if (elTotalRent) elTotalRent.innerText = grandTotalRent.toLocaleString() + " đ";
+    if (elTotalService) elTotalService.innerText = grandTotalService.toLocaleString() + " đ";
+    if (elTotalRevenue) elTotalRevenue.innerText = (grandTotalRent + grandTotalService).toLocaleString() + " đ";
+}
+
 // --- XỬ LÝ SUBMIT ---
 
 if (selectors.submitBillBtn) {
@@ -380,16 +481,16 @@ async function handleSubmitRoom() {
 
 async function initApp(search = '') {
     if (!localStorage.getItem("token")) return window.location.href = "login.html";
-    
+
     const data = await getRoomsService(search);
     if (data && data.rooms) {
-        // 1. Sắp xếp
+        // Sắp xếp
         data.rooms.sort((a, b) => extractRoomNumber(a.roomNum) - extractRoomNumber(b.roomNum));
-        
-        // 2. Lọc
+
+        // Lọc
         const filteredRooms = filterRoomsLogic(data.rooms);
-        
-        // 3. Render
+
+        // Render
         renderRoomTable({ ...data, rooms: filteredRooms });
     }
 }
@@ -398,6 +499,12 @@ async function initBillList() {
     const res = await getAllBillsService();
     if (res.success) renderBillTable(res.data);
     else alert("Không thể tải danh sách hóa đơn");
+}
+
+async function initReportList() {
+    const res = await getAllBillsService();
+    if (res.success) renderReportTable(res.data)
+    else alert('Không thể tải danh sách báo cáo')
 }
 
 function handleLogout() {
@@ -413,15 +520,15 @@ function toggleModal(show) {
     }
 }
 
-// --- DOM READY ---
+// --- DOM ---
+
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
 
-    // Event Checkbox
     selectors.checkboxes.forEach(cb => {
         cb.onchange = () => {
             if (cb.value === 'all' && cb.checked) {
-                selectors.checkboxes.forEach(other => { if(other !== cb) other.checked = false; });
+                selectors.checkboxes.forEach(other => { if (other !== cb) other.checked = false; });
             } else if (cb.checked) {
                 const allCb = Array.from(selectors.checkboxes).find(c => c.value === 'all');
                 if (allCb) allCb.checked = false;
@@ -434,6 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
         selectors.navItems[0].onclick = () => window.switchTab('home')
         selectors.navItems[1].onclick = () => window.switchTab('rooms');
         selectors.navItems[2].onclick = () => window.switchTab('bills');
+        selectors.navItems[3].onclick = () => window.switchTab('report')
     }
 
     let timeout;
@@ -452,34 +560,5 @@ document.addEventListener('DOMContentLoaded', () => {
     if (selectors.closeBillModal) selectors.closeBillModal.onclick = () => selectors.billModal.style.display = "none";
     if (selectors.logoutBtn) selectors.logoutBtn.onclick = handleLogout;
 
-    window.onclick = (e) => {
-        if (e.target == selectors.modal) toggleModal(false);
-        if (e.target == selectors.billModal) selectors.billModal.style.display = "none";
-    };
 
-    window.handleDelete = async (roomNum) => {
-        if (confirm(`Bạn có chắc muốn xóa phòng ${roomNum}?`)) {
-            const res = await deleteRoomService(roomNum);
-            if (res.message?.includes('success') || res.success) {
-                alert("Xóa thành công!");
-                initApp();
-            } else alert("Lỗi: " + res.message);
-        }
-    };
-
-    window.openEditModal = (trElement) => {
-        const room = JSON.parse(trElement.dataset.room);
-        selectors.isEditMode.value = "true";
-        selectors.modalTitle.innerText = `SỬA PHÒNG: ${room.roomNum}`;
-        selectors.inputs.roomNum.value = room.roomNum;
-        selectors.inputs.roomNum.disabled = true;
-        selectors.inputs.group.value = room.group || "";
-        selectors.inputs.price.value = room.price || "";
-        selectors.inputs.deposit.value = room.deposit || "";
-        selectors.inputs.occupants.value = room.occupants || "";
-        selectors.inputs.checkinDate.value = room.checkinDate || "";
-        selectors.inputs.contractTerm.value = room.contractTerm || "";
-        selectors.inputs.status.value = room.status || "Trống";
-        toggleModal(true);
-    };
 });

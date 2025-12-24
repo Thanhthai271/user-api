@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản Lý Nhà Trọ</title>
+    <title>LovingBoardingHouse</title>
     <link rel="stylesheet" href="../css/view.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
         integrity="..." crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -13,7 +13,7 @@
 <body>
     <div class="container">
         <div class="glass-panel top-nav">
-            <div class="brand"><i class="fas fa-building"></i> QUẢN LÝ NHÀ TRỌ</div>
+            <div class="brand"><i class="fas fa-building"></i> NHÀ TRỌ YÊU THƯƠNG </div>
             <div class="nav-links">
                 <a href="#" class="nav-item active"><i class="fas fa-home"></i>Tổng quan</a>
                 <a href="#" class="nav-item"><i class="fas fa-door-open"></i>Phòng</a>
@@ -33,22 +33,23 @@
         <div class="stats-container">
             <div class="glass-panel stat-card" style="border-left-color: #ff7675;">
                 <div class="stat-info">
-                    <h3>Tổng số tiền khách nợ</h3>
-                    <p id="statDebt" style="color: #ff7675;">0 đ</p>
+                    <h3>HỢP ĐỒNG</h3>
+                    <p id="statDebt" style="color: #ff7675;">0 Hợp đồng</p>
                 </div>
-                <div class="stat-icon" style="color: #ff7675;"><i class="fas fa-hand-holding-usd"></i></div>
+                <div class="stat-icon" style="color:#ff7675 ;"><i class="fas fa-money-bill-wave"></i></div>
             </div>
             <div class="glass-panel stat-card" style="border-left-color: #00ffcc;">
                 <div class="stat-info">
-                    <h3>Tổng số tiền cọc</h3>
-                    <p id="statTotalDeposit" style="color: #00ffcc;"></p>
+                    <h3>TIỀN CỌC</h3>
+                    <p id="statTotalDeposit" style="color: #00ffcc;">0 đ</p>
                 </div>
-                <div class="stat-icon" style="color: #00ffcc;"><i class="fas fa-money-bill-wave"></i></div>
+                <div class="stat-icon" style="color:#00ffcc;"><i class="fas fa-hand-holding-usd"></i></div>
+
             </div>
             <div class="glass-panel stat-card" style="border-left-color: #ffeaa7;">
                 <div class="stat-info">
-                    <h3>Tiền cọc giữ chỗ</h3>
-                    <p id="statReservation" style="color: #ffeaa7;">0 đ</p>
+                    <h3>LIÊN HỆ</h3>
+                    <p id="statReservation" style="color: #ffeaa7;">0 Liên hệ</p>
                 </div>
                 <div class="stat-icon" style="color: #ffeaa7;"><i class="fas fa-bookmark"></i></div>
             </div>
@@ -62,21 +63,21 @@
         </div>
 
         <div class="image-gallery-grid">
-    <div class="glass-panel gallery-item">
-        <img src="../image/hien-trang-san-vuon-Bac-Giang-07-1024x576.jpg" alt="Phòng mẫu 1">
-        <div class="gallery-caption">Khuôn viên nhà trọ</div>
-    </div>
-    <div class="glass-panel gallery-item">
-        <img src="../image/R.jpg" alt="Phòng mẫu 2">
-        <div class="gallery-caption">Nội thất cao cấp</div>
-    </div>
-    <div class="glass-panel gallery-item">
-        <img src="../image/camera-an-ninh.jpg" alt="Phòng mẫu 3">
-        <div class="gallery-caption">An ninh 24/7</div>
-    </div>
-</div>
+            <div class="glass-panel gallery-item">
+                <img src="../image/hien-trang-san-vuon-Bac-Giang-07-1024x576.jpg" alt="Phòng mẫu 1">
+                <div class="gallery-caption">Khuôn viên nhà trọ</div>
+            </div>
+            <div class="glass-panel gallery-item">
+                <img src="../image/R.jpg" alt="Phòng mẫu 2">
+                <div class="gallery-caption">Nội thất cao cấp</div>
+            </div>
+            <div class="glass-panel gallery-item">
+                <img src="../image/camera-an-ninh.jpg" alt="Phòng mẫu 3">
+                <div class="gallery-caption">An ninh 24/7</div>
+            </div>
+        </div>
 
-        <div class="glass-panel body-nav">
+        <div class="glass-panel body-nav" style="display: none;">
             <div class="toolbar">
                 <div class="filter-group">
                     <div style="font-weight: bold; margin-right: 10px; color: #00ffcc;">Bộ lọc:</div>
@@ -122,7 +123,7 @@
                 </table>
             </div>
 
-            
+
 
             <div class="table-footer-info">
                 Hiển thị danh sách phòng | Copyright © Quản lý nhà trọ Galaxy
@@ -131,28 +132,28 @@
     </div>
 
     <div id="billListSection" style="display: none;">
-            <div class="glass-panel" style="padding: 20px;">
-                <h2 style="color: #00ffcc; margin-bottom: 20px;"><i class="fas fa-history"></i> Lịch Sử Hóa Đơn</h2>
-                <div class="table-container">
-                    <table id="billTable">
-                        <thead>
-                            <tr>
-                                <th>Phòng</th>
-                                <th>Tiền điện</th>
-                                <th>Tiền nước</th>
-                                <th>Tiền Wifi</th>
-                                <th>Tổng Tiền</th>
-                                <th>Đã Khấu Trừ Cọc</th>
-                                <th>Ngày Lập</th>
-                                <th>Trạng Thái</th>
-                                <th>Hành Động</th>
-                            </tr>
-                        </thead>
-                        <tbody id="billTableBody"></tbody>
-                    </table>
-                </div>
+        <div class="glass-panel" style="padding: 20px;">
+            <h2 style="color: #00ffcc; margin-bottom: 20px;"><i class="fas fa-history"></i> Lịch Sử Hóa Đơn</h2>
+            <div class="table-container">
+                <table id="billTable">
+                    <thead>
+                        <tr>
+                            <th>Phòng</th>
+                            <th>Tiền điện</th>
+                            <th>Tiền nước</th>
+                            <th>Tiền Wifi</th>
+                            <th>Tổng Tiền</th>
+                            <th>Đã Khấu Trừ Cọc</th>
+                            <th>Ngày Lập</th>
+                            <th>Trạng Thái</th>
+                            <th>Hành Động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="billTableBody"></tbody>
+                </table>
             </div>
         </div>
+    </div>
     </div>
 
     <div id="createRoomModal" class="modal">
@@ -211,70 +212,104 @@
         </div>
     </div>
 
-<div id="createBillModal" class="modal">
-    <div class="modal-content">
-        <span class="close-bill-btn" style="float:right; cursor:pointer;">&times;</span>
-        <h2 style="margin-bottom: 20px; color: #00ffcc;">LẬP HÓA ĐƠN PHÒNG <span id="displayRoomNum"></span></h2>
-        
-        <input type="hidden" id="billRoomNum">
-        <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            <div class="form-group">
-                <label>Số điện cũ (khi vào)</label>
-                <input type="number" id="inpOldElectric" class="form-control">
-            </div>
-            <div class="form-group">
-                <label>Số điện mới (hiện tại)</label>
-                <input type="number" id="inpNewElectric" class="form-control">
-            </div>
-            <div class="form-group" style="grid-column: span 2;">
-                <label>Giá điện (1kWh = ? đ)</label>
-                <input type="number" id="inpElectricUnit" value="3500" class="form-control">
-            </div>
-            <div class="form-group">
-                <label>Tiền Nước (tổng tiền)</label>
-                <input type="number" id="inpWaterPrice" class="form-control">
-            </div>
-            <div class="form-group">
-                <label>Tiền Wifi (tổng tiền)</label>
-                <input type="number" id="inpWifiPrice" class="form-control">
-            </div>
-        </div>
-        <button id="submitCreateBillBtn" class="submit-btn" style="margin-top: 20px; width: 100%;">XÁC NHẬN & KHẤU TRỪ CỌC</button>
-    </div>
-</div>
+    <div id="createBillModal" class="modal">
+        <div class="modal-content">
+            <span class="close-bill-btn" style="float:right; cursor:pointer;">&times;</span>
+            <h2 style="margin-bottom: 20px; color: #00ffcc;">LẬP HÓA ĐƠN PHÒNG <span id="displayRoomNum"></span></h2>
 
-<footer class="glass-panel main-footer">
-    <div class="footer-content">
-        <div class="footer-section brand-info">
-            <div class="brand"><i class="fas fa-building"></i> LovingBoardingHouse </div>
-            <p>Hệ thống quản lý nhà trọ thông minh, mang đến trải nghiệm vận hành tối ưu và chuyên nghiệp nhất cho chủ trọ hiện đại.</p>
-            <div class="social-links">
-                <a href="#"><i class="fab fa-facebook"></i></a>
-                <a href="#"><i class="fab fa-zalo"></i></a>
-                <a href="#"><i class="fas fa-envelope"></i></a>
+            <input type="hidden" id="billRoomNum">
+            <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>Số điện cũ (khi vào)</label>
+                    <input type="number" id="inpOldElectric" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Số điện mới (hiện tại)</label>
+                    <input type="number" id="inpNewElectric" class="form-control">
+                </div>
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Giá điện (1kWh = ? đ)</label>
+                    <input type="number" id="inpElectricUnit" value="3500" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Tiền Nước (tổng tiền)</label>
+                    <input type="number" id="inpWaterPrice" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Tiền Wifi (tổng tiền)</label>
+                    <input type="number" id="inpWifiPrice" class="form-control">
+                </div>
             </div>
-        </div>
-
-        <div class="footer-section">
-            <h4>Liên kết nhanh</h4>
-            <ul>
-                <li><a href="#"><i class="fas fa-chevron-right"></i> Hướng dẫn sử dụng</a></li>
-                <li><a href="#"><i class="fas fa-chevron-right"></i> Chính sách bảo mật</a></li>
-                <li><a href="#"><i class="fas fa-chevron-right"></i> Hỗ trợ kỹ thuật</a></li>
-            </ul>
-        </div>
-
-        <div class="footer-section">
-            <h4>Liên hệ hỗ trợ</h4>
-            <p><i class="fas fa-phone-alt"></i> Hotline: 0123.456.789</p>
-            <p><i class="fas fa-map-marker-alt"></i> 123 Đường Galaxy, TP. Hồ Chí Minh</p>
-            <p><i class="fas fa-clock"></i> Hỗ trợ: 24/7</p>
+            <button id="submitCreateBillBtn" class="submit-btn" style="margin-top: 20px; width: 100%;">XÁC NHẬN & KHẤU
+                TRỪ CỌC</button>
         </div>
     </div>
-    <div class="footer-bottom">
-        <p>Copyright © 2025 <span>Quản lý nhà trọ Galaxy</span>. All rights reserved.</p>
+
+    <div id="reportSection" style="display: none; margin-top: 20px;">
+        <div class="glass-panel" style="padding: 20px;">
+            <h2 style="color: #00ffcc; margin-bottom: 20px;"><i class="fas fa-chart-line"></i> Báo Cáo Doanh Thu Theo
+                Tháng</h2>
+
+            <div class="table-container">
+                <table id="revenueReportTable">
+                    <thead>
+                        <tr>
+                            <th>Tháng/Năm</th>
+                            <th>Tổng Tiền Thuê</th>
+                            <th>Tổng Tiền Dịch Vụ</th>
+                            <th>Doanh Thu Thuần</th>
+                            <th>Trạng Thái</th>
+                        </tr>
+                    </thead>
+                    <tbody id="revenueTableBody">
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td><strong>TỔNG CỘNG</strong></td>
+                            <td id="totalRent">0 đ</td>
+                            <td id="totalService">0 đ</td>
+                            <td id="totalRevenue" style="color: #00ffcc; font-size: 1.1em;">0 đ</td>
+                            <td>---</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
     </div>
-</footer>
+
+    <footer class="glass-panel main-footer">
+        <div class="footer-content">
+            <div class="footer-section brand-info">
+                <div class="brand"><i class="fas fa-building"></i> NHÀ TRỌ YÊU THƯƠNG </div>
+                <p>Hệ thống quản lý nhà trọ thông minh, mang đến trải nghiệm vận hành tối ưu và chuyên nghiệp nhất cho
+                    chủ trọ hiện đại.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-zalo"></i></a>
+                    <a href="#"><i class="fas fa-envelope"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h4>Liên kết nhanh</h4>
+                <ul>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Hướng dẫn sử dụng</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Chính sách bảo mật</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Hỗ trợ kỹ thuật</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>Liên hệ hỗ trợ</h4>
+                <p><i class="fas fa-phone-alt"></i> Hotline: 0123.456.789</p>
+                <p><i class="fas fa-map-marker-alt"></i> 9/137 Trường Chinh TP.Huế</p>
+                <p><i class="fas fa-clock"></i> Hỗ trợ: 24/7</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>Copyright © 2025 <span>Quản lý nhà trọ Galaxy</span>. All rights reserved.</p>
+        </div>
+    </footer>
 
     <script type="module" src="../api/view.js"></script>
 </body>

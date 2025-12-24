@@ -1,4 +1,3 @@
-/* --- 1. RESET & CƠ BẢN --- */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -13,7 +12,6 @@ body {
     min-height: 100vh;
 }
 
-/* --- 2. GLASSMORPHISM PANEL --- */
 .glass-panel {
     background: rgba(15, 23, 42, 0.85);
     backdrop-filter: blur(12px);
@@ -31,7 +29,6 @@ body {
     padding-bottom: 30px;
 }
 
-/* --- 3. TOP NAVIGATION --- */
 .top-nav {
     display: flex;
     justify-content: space-between;
@@ -93,7 +90,6 @@ body {
     font-weight: 500;
 }
 
-/* --- 4. STATS CARDS --- */
 .stats-container {
     display: flex;
     gap: 15px;
@@ -132,17 +128,16 @@ body {
     opacity: 0.9;
 }
 
-/* --- GALLERY SECTION --- */
 .image-gallery-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* Chia 3 cột bằng nhau */
+    grid-template-columns: repeat(3, 1fr);
     gap: 20px;
     margin-bottom: 20px;
 }
 
 .gallery-item {
     position: relative;
-    padding: 8px; /* Khoảng cách từ viền Glass tới ảnh */
+    padding: 8px;
     overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     cursor: pointer;
@@ -150,8 +145,8 @@ body {
 
 .gallery-item img {
     width: 100%;
-    height: 180px; /* Độ cao cố định cho ảnh */
-    object-fit: cover; /* Quan trọng: Giúp ảnh không bị méo khi kích thước khác nhau */
+    height: 180px; 
+    object-fit: cover;
     border-radius: 8px;
     display: block;
 }
@@ -164,24 +159,22 @@ body {
     text-align: center;
 }
 
-/* Hiệu ứng Hover Galaxy */
 .gallery-item:hover {
     transform: translateY(-5px);
     border-color: rgba(0, 255, 204, 0.5);
     box-shadow: 0 10px 25px rgba(0, 255, 204, 0.2);
 }
 
-/* Responsive: Trên điện thoại sẽ xếp chồng thành 1 cột */
 @media (max-width: 992px) {
     .image-gallery-grid {
         grid-template-columns: 1fr;
     }
     .gallery-item img {
-        height: 250px; /* Cho ảnh to hơn trên mobile */
+        height: 250px; 
     }
 }
 
-/* --- 5. TOOLBAR (BỘ LỌC & HÀNH ĐỘNG) --- */
+/* --- TOOLBAR --- */
 .toolbar {
     padding: 20px;
     display: flex;
@@ -198,7 +191,6 @@ body {
     align-items: center;
 }
 
-/* Hiệu ứng cho Search Box */
 .search-box input {
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(0, 255, 204, 0.2);
@@ -212,10 +204,9 @@ body {
 .search-box input:focus {
     border-color: #00ffcc;
     box-shadow: 0 0 15px rgba(0, 255, 204, 0.2);
-    width: 320px; /* Hiệu ứng giãn rộng khi click vào */
+    width: 320px; 
 }
 
-/* Nút bấm phong cách Galaxy */
 .action-btn {
     border-radius: 8px;
     padding: 10px 20px;
@@ -255,7 +246,6 @@ body {
     height: 15px;
 }
 
-/* Cụm tìm kiếm và nút bấm */
 .search-box {
     position: relative;
     display: inline-block;
@@ -300,7 +290,7 @@ body {
     filter: brightness(1.1);
 }
 
-/* --- 6. TABLES (ROOM & BILL) --- */
+/* --- TABLES --- */
 .table-container {
     overflow-x: auto;
     padding: 0;
@@ -330,7 +320,6 @@ td {
     color: #eee;
 }
 
-/* Styling cho bảng Hóa đơn cụ thể */
 #billListSection {
     animation: fadeInUp 0.5s ease-out;
     margin-top: 20px;
@@ -347,15 +336,14 @@ td {
     }
 }
 
-/* Hiệu ứng hover cho dòng trong bảng hóa đơn */
 #billTable tbody tr {
     transition: all 0.3s ease;
 }
 
 #billTable tbody tr:hover {
-    background: rgba(0, 255, 204, 0.08); /* Màu xanh Galaxy mờ */
-    transform: scale(1.005); /* Phóng nhẹ dòng đang xem */
-    box-shadow: inset 4px 0 0 #00ffcc; /* Thanh chỉ thị bên trái */
+    background: rgba(0, 255, 204, 0.08); /
+    transform: scale(1.005);
+    box-shadow: inset 4px 0 0 #00ffcc;
 }
 
 #billTable th {
@@ -364,14 +352,12 @@ td {
     border-bottom: 2px solid rgba(0, 255, 204, 0.3);
 }
 
-/* Các con số tiền tệ nên có font-family đồng nhất và dễ nhìn */
 #billTable td strong {
-    font-family: 'Courier New', Courier, monospace; /* Font dạng digital/kế toán */
+    font-family: 'Courier New', Courier, monospace;
     font-size: 14px;
     color: #e2e8f0;
 }
 
-/* Trạng thái thanh toán trong danh sách hóa đơn */
 .status-paid {
     color: #2ecc71;
     background: rgba(46, 204, 113, 0.15);
@@ -406,7 +392,7 @@ td {
     color: white;
 }
 
-/* --- 7. BADGES & ACTION BUTTONS --- */
+/* --- BADGES & ACTION BUTTONS --- */
 .badge {
     padding: 6px 12px;
     border-radius: 6px;
@@ -414,9 +400,8 @@ td {
     font-size: 11px;
 }
 
-/* Màu sắc linh hoạt cho bảng */
 #roomTable tr:hover {
-    background: rgba(0, 255, 204, 0.05); /* Highlight dòng khi di chuột */
+    background: rgba(0, 255, 204, 0.05);
     transition: 0.2s;
 }
 
@@ -425,7 +410,6 @@ td {
     box-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
 }
 
-/* Hiệu ứng mượt cho Modal */
 .modal-content {
     animation: modalFadeIn 0.4s ease-out;
 }
@@ -472,7 +456,7 @@ td {
     background: rgba(0, 184, 148, 0.4);
 }
 
-/* --- 8. MODALS --- */
+/* --- MODALS --- */
 .modal {
     display: none;
     position: fixed;
@@ -543,7 +527,7 @@ td {
     text-transform: uppercase;
 }
 
-/* --- 9. OTHERS --- */
+/* --- OTHERS --- */
 .logout-btn {
     background: #e74c3c !important;
     margin-left: 15px;
@@ -557,7 +541,6 @@ td {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Responsive cho Toolbar */
 @media (max-width: 768px) {
     .toolbar {
         justify-content: center;
@@ -572,13 +555,13 @@ td {
 .main-footer {
     margin-top: 50px;
     padding: 40px 0 20px 0;
-    border-radius: 15px 15px 0 0; /* Bo góc phía trên */
+    border-radius: 15px 15px 0 0;
     border-bottom: none;
 }
 
 .footer-content {
     display: grid;
-    grid-template-columns: 2fr 1fr 1.5fr; /* Tỉ lệ các cột */
+    grid-template-columns: 2fr 1fr 1.5fr;
     gap: 40px;
     width: 90%;
     max-width: 1400px;
@@ -665,7 +648,6 @@ td {
     font-weight: 600;
 }
 
-/* Responsive cho Footer */
 @media (max-width: 768px) {
     .footer-content {
         grid-template-columns: 1fr;
@@ -674,4 +656,20 @@ td {
     .social-links {
         justify-content: center;
     }
+}
+
+/* Style cho dòng tổng cộng trong báo cáo */
+.total-row {
+    background: rgba(0, 255, 204, 0.15);
+    border-top: 2px solid #00ffcc;
+}
+
+.total-row td {
+    padding: 15px;
+    font-weight: bold;
+    color: #fff;
+}
+
+#totalRevenue {
+    text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
 }
