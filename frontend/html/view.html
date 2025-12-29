@@ -31,7 +31,7 @@
         </div>
 
         <div class="stats-container">
-            <div class="glass-panel stat-card" style="border-left-color: #ff7675;">
+            <div class="glass-panel stat-card " style="border-left-color: #ff7675;">
                 <div class="stat-info">
                     <h3>HỢP ĐỒNG</h3>
                     <p id="statDebt" style="color: #ff7675;">0 Hợp đồng</p>
@@ -60,6 +60,70 @@
                 </div>
                 <div class="stat-icon" style="color: #ff7675;"><i class="fas fa-exclamation-triangle"></i></div>
             </div>
+        </div>
+
+                <div id="contractSection" style="display: none; margin-top: 20px;">
+            <div class="contract-container">
+                <div class="contract-tab">
+                    <button class="tab-btn active" onclick="handleOpenContractTab(event, 'view-contract')">
+                        <i class="fas fa-file-contract"></i> Hợp Đồng Thuê Phòng 
+                    </button>
+                    <button class="tab-btn" onclick="handleOpenContractTab(event, 'view-rules')">
+                        <i class="fas fa-gavel"></i> Nội Quy Nhà Trọ
+                    </button>
+                </div>
+                
+
+                <div id="view-contract" class="tab-content glass-panel active">
+                    <div class="contract-paper">
+                        <h2 class="contract-title">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h2>
+                        <p class="contract-subtitle">Độc lập - Tự do - Hạnh phúc</p>
+                        <hr>
+                        <h3 style="text-align: center;">HỢP ĐỒNG THUÊ PHÒNG TRỌ</h3>
+                        <div class="contract-body">
+                            <p><strong>BÊN CHO THUÊ (BÊN A) :</strong> NHÀ TRỌ YÊU THƯƠNG</p>
+                            <p><strong>BÊN THUÊ ( BÊN B) : </strong> <span
+                                    id="contract-tenant-name">....................</span></p>
+                            <p><strong>NỘI DUNG THỎA THUẬN : </strong></p>
+                            <ul>
+                                <li>Bên A đồng ý cho bên B thuê phòng số : <span id="contract-room-num">...</span></li>
+                                <li>Giá thuê : <span id="contract-price">...</span> đ/tháng.</li>
+                                <li>Tiền cọc : <span id="contract-deposit">...</span> đ.</li>
+                                <li>Ngày bắt đầu : <span id="contract-date">...</span></li>
+                            </ul>
+                            <p><strong>Trách Nhiệm:</strong> Hai bên cam kết thực hiện đúng các điều kiện và nội quy đã
+                                định...</p>
+                        </div>
+                        <div class="contract-sign">
+                            <div class="sign-box">Đại diện bên A</div>
+                            <div class="sign-box">Đại diện bên B</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-rules" class="tab-content glass-panel" style="margin-bottom: 20px;">
+                    <h3 style="color: #00ffcc; margin-bottom: 20px;"><i class="fas fa-bullhorn"></i>NỘI QUY CHUNG</h3>
+                    <div class="rules-list">
+                        <div class="rule-item">
+                            <span class="rule-num">01</span>
+                            <p>- Giữ gìn vệ sinh chung, không vứt rác bừa bãi tại hành lang và khu vực công cộng.</p>
+                        </div>
+                        <div class="rule-item">
+                            <span class="rule-num">02</span>
+                            <p>- Giờ giấc tự do, nhưng hạn chế gây tiếng động lớn sau 23h đêm.</p>
+                        </div>
+                        <div class="rule-item">
+                            <span class="rule-num">03</span>
+                            <p>- TIết kiệm điện nước, tắt các thiết bị khi không có nhu cầu sử dụng.</p>
+                        </div>
+                        <div class="rule-item">
+                            <span class="rule-num">04</span>
+                            <p>- Đăng ký tạm trú tạm vắng theo đúng quy định của pháp luật.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <div class="image-gallery-grid">
@@ -307,7 +371,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>Copyright © 2025 <span>Quản lý nhà trọ Galaxy</span>. All rights reserved.</p>
+            <p>Copyright © 2025 <span>Quản lý nhà trọ</span>. All rights reserved.</p>
         </div>
     </footer>
 

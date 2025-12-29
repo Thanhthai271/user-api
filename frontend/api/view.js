@@ -4,10 +4,12 @@ import BaseURL from "./route.js";
 const selectors = {
     // --- Navigation & Sections ---
     navItems: document.querySelectorAll('.nav-item'),
+    statSection: document.querySelector('.stats-container'),
     dashboardSection: document.querySelector('.body-nav'),
     billSection: document.getElementById('billListSection'),
     imgSection: document.querySelector('.image-gallery-grid'),
     reportSection: document.getElementById('reportSection'),
+    contractSection: document.getElementById('contractSection'),
 
     // --- Filter & Search ---
     checkboxes: document.querySelectorAll('.filter-cb'),
@@ -17,6 +19,8 @@ const selectors = {
     tableBody: document.querySelector('#roomTable tbody'),
     footerInfo: document.querySelector('.table-footer-info'),
     reportBody: document.querySelector('#revenueReportTable'),
+    imgBody: document.querySelectorAll('.gallery-item'),
+    statBody: document.querySelectorAll('.stat-card'),
 
     // --- Bill Table ---
     billTableBody: document.getElementById('billTableBody'),
@@ -168,13 +172,16 @@ window.switchTab = (tabName) => {
         selectors.imgSection.style.display = 'none'
         selectors.reportSection.style.display = 'none'
         if (selectors.navItems[2]) selectors.navItems[2].classList.add('active');
+        selectors.contractSection.style.display = 'none'
         initBillList();
 
     } else if (tabName == 'home') {
         selectors.imgSection.style.display = 'grid'
+        selectors.statSection.style.display = 'flex'
         selectors.dashboardSection.style.display = 'none'
         selectors.billSection.style.display = 'none'
         selectors.reportSection.style.display = 'none'
+        selectors.contractSection.style.display = 'none'
         if (selectors.navItems[0]) selectors.navItems[0].classList.add('active');
 
     } else if (tabName === 'report') {
@@ -182,20 +189,45 @@ window.switchTab = (tabName) => {
         selectors.dashboardSection.style.display = 'none'
         selectors.imgSection.style.display = 'none'
         selectors.billSection.style.display = 'none'
+        selectors.contractSection.style.display = 'none'
         if (selectors.navItems[3]) selectors.navItems[3].classList.add('active')
         initReportList()
 
 
-    } else {
+    } else if (tabName === 'contract') {
+        selectors.contractSection.style.display = 'block'
+        selectors.reportSection.style.display = 'none'
+        selectors.dashboardSection.style.display = 'none'
+        selectors.imgSection.style.display = 'none'
+        selectors.billSection.style.display = 'none'
+        selectors.statSection.style.display = 'flex'
+        if(selectors.statBody[0]) selectors.statBody[0].classList.add('active')
+    }
+
+    else {
         selectors.dashboardSection.style.display = 'block'
         selectors.imgSection.style.display = 'none'
         selectors.billSection.style.display = 'none'
         selectors.reportSection.style.display = 'none'
+        selectors.contractSection.style.display = 'none'
         if (selectors.navItems[1]) selectors.navItems[1].classList.add('active');
         initApp();
     }
 };
 
+window.handleOpenContractTab = (evt, tabName) => {
+    let i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tab-content");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].classList.remove("active");
+    }
+    tablinks = document.getElementsByClassName("tab-btn");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].classList.remove("active");
+    }
+    document.getElementById(tabName).classList.add("active");
+    evt.currentTarget.classList.add("active");
+};
 
 window.handleOpenCreateBill = (roomNum) => {
     selectors.billRoomNumInput.value = roomNum;
@@ -542,6 +574,17 @@ document.addEventListener('DOMContentLoaded', () => {
         selectors.navItems[1].onclick = () => window.switchTab('rooms');
         selectors.navItems[2].onclick = () => window.switchTab('bills');
         selectors.navItems[3].onclick = () => window.switchTab('report')
+    }
+
+
+    if (selectors.imgBody.length > 0) {
+        selectors.imgBody[0].onclick = () => selectors.imgBody[0].style.display = 'none'
+        selectors.imgBody[1].onclick = () => selectors.imgBody[1].style.display = 'none'
+        selectors.imgBody[2].onclick = () => selectors.imgBody[2].style.display = 'none'
+    }
+    
+    if (selectors.statBody.length > 0) {
+        selectors.statBody[0].onclick = () => window.switchTab('contract')
     }
 
     let timeout;

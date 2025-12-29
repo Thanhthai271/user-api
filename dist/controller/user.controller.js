@@ -16,13 +16,12 @@ const login = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "Sai username hoặc password" });
         }
-        // Lấy Token 
         const payload = {
             id: user._id,
             user: user.username,
             email: user.email
         };
-        const accesToken = jsonwebtoken_1.default.sign(payload, jwt_1.SECRET_KEY, { expiresIn: "1h" });
+        const accessToken = jsonwebtoken_1.default.sign(payload, jwt_1.SECRET_KEY, { expiresIn: "1h" });
         const timeDeathToken = 7 * 24 * 60 * 60 * 1000;
         const refreshToken = jsonwebtoken_1.default.sign(payload, jwt_1.SECRET_KEY_REFRESH, { expiresIn: "7d" });
         await user_refreshToken_1.RefreshToken.create({
@@ -39,7 +38,7 @@ const login = async (req, res) => {
         });
         res.status(200).json({
             message: "Đăng nhập thành công",
-            accesToken: accesToken,
+            accessToken: accessToken,
             authorize: true
         });
     }
@@ -49,16 +48,13 @@ const login = async (req, res) => {
     }
 };
 exports.login = login;
-// Tạo user
 const createUser = async (req, res) => {
     try {
         const { username, password, room, email, } = req.body;
-        // Kiểm tra username có tồn tại chưa
         const existingUser = await user_models_1.User.findOne({ username });
         if (existingUser) {
             return res.status(400).json({ message: "Username đã tồn tại" });
         }
-        // Tạo user mới — KHÔNG cần tạo id thủ công -> Object_id
         const newUser = new user_models_1.User({
             username,
             password,
@@ -94,37 +90,44 @@ const getUserById = async (req, res) => {
     }
 };
 exports.getUserById = getUserById;
-//Lấy toàn bộ user
 const getUser = async (req, res) => {
     try {
         const limitDefault = 10;
-        const limit = parseInt(req.query.limit) || limitDefault;
-        const offset = parseInt(req.query.offset) || 0;
-        const page = parseInt(req.query.page) || Math.floor(offset / limit) + 1;
-        const skip = offset || (page - 1) * limit;
+        const limitRaw = Number(req.query.limit);
+        const offsetRaw = Number(req.query.offset);
+        const pageRaw = Number(req.query.page);
+        const skipRaw = Number(req.query.skip);
         const searchText = req.query.search;
-        if (req.query.limit && isNaN(Number(req.query.limit))) {
+        if (req.query.limit !== undefined && (isNaN(limitRaw)) || limitRaw < 0) {
             return res.status(400).json({ message: 'limit must be number' });
         }
-        if (req.query.page && isNaN(Number(req.query.page))) {
-            return res.status(400).json({ message: 'page must be number' });
+        if (req.query.offset !== undefined && (isNaN(offsetRaw) || offsetRaw < 0)) {
+            return res.status(400).json({ message: 'offset must be non-negative number' });
         }
-        if (req.query.offset && isNaN(Number(req.query.offset))) {
-            return res.status(400).json({ message: 'offset must be number' });
+        if (req.query.page !== undefined && (isNaN(pageRaw) || pageRaw < 1)) {
+            return res.status(400).json({ message: 'page must be positive number' });
         }
-        if (req.query.searchText && typeof req.query.searchText !== "string") {
-            return res.status(400).json({ message: 'searchtext' });
+        if (req.query.skip !== undefined && (isNaN(skipRaw) || skipRaw < 0)) {
+            return res.status(400).json({ message: 'skip must be non-negative number' });
         }
-        const matchStage = searchText ? {
-            $match: {
-                $or: [
-                    { name: { $regex: searchText, $options: 'i' } },
-                    { email: { $regex: searchText, $options: 'i' } },
-                ]
+        const limit = !isNaN(limitRaw) ? limitRaw : limitDefault;
+        const offset = !isNaN(offsetRaw) ? offsetRaw : 0;
+        const page = !isNaN(pageRaw)
+            ? pageRaw
+            : Math.floor(offset / limit) + 1;
+        const skip = !isNaN(skipRaw)
+            ? skipRaw
+            : (page - 1) * limit;
+        const matchStage = searchText
+            ? {
+                $match: {
+                    $or: [
+                        { name: { $regex: searchText, $options: 'i' } },
+                        { email: { $regex: searchText, $options: 'i' } }
+                    ]
+                }
             }
-        }
             : { $match: {} };
-        // >>> Toán tử 3 ngôi điều kiện nếu có matchStage ? a : b
         const countPromise = user_models_1.User.aggregate([
             matchStage,
             { $count: "total" }
@@ -134,26 +137,34 @@ const getUser = async (req, res) => {
             { $sort: { createdAt: -1 } },
             { $skip: skip },
             { $limit: limit },
-            { $project: { password: 0 } } //Tùy chọn ẩn mật khẩu
+            { $project: { password: 0 } }
         ]);
         const [countResult, users] = await Promise.all([countPromise, findPromise]);
-        const totalUsers = countResult.length > 0 ? countResult[0].total : 0; // Toán tử 3 ngôi 
-        // Tính toán thông tin phân trang (metadata)
+        const totalUsers = countResult.length > 0 ? countResult[0].total : 0;
         const totalPages = Math.ceil(totalUsers / limit);
-        res.json({
+        if (page > totalPages) {
+            return res.status(400).json({ message: `Hiện tại chỉ có ${totalPages} trang` });
+        }
+        if (skip >= totalUsers && totalUsers > 0) {
+            return res.status(400).json({ message: `Hiện tại chỉ có ${totalUsers} người` });
+        }
+        if (limit >= totalUsers && totalUsers > 0) {
+            return res.status(400).json({ message: `Hiện tại chỉ có ${totalUsers} người` });
+        }
+        return res.status(200).json({
             users,
             pagination: {
                 totalUsers,
                 limit,
-                offset: offset,
+                offset,
                 currentPage: page,
-                totalPages,
+                totalPages
             }
         });
     }
     catch (err) {
         console.error("❌ getAllUsers error", err);
-        res.status(500).json({ message: " Error fetching users ", err });
+        return res.status(500).json({ message: "Error fetching users", err });
     }
 };
 exports.getUser = getUser;
@@ -161,7 +172,8 @@ exports.getUser = getUser;
 const updateUser = async (req, res) => {
     try {
         const { id } = req.params;
-        const { username, password, phone, email, address, room } = req.body;
+        const { username, email } = req.params;
+        const { password, phone, address, room } = req.body;
         if (id) {
             if (!mongoose_1.Types.ObjectId.isValid(id)) {
                 res.status(400).json({ message: "Bad request, try again" });

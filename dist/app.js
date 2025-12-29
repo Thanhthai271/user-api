@@ -10,8 +10,13 @@ const cors_1 = __importDefault(require("cors"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)({
-    origin: ["http://127.0.0.1:5500", "http://localhost:5500"], // Cho phép domain frontend (VD: React)
-    methods: ["GET", "POST", "PUT", "DELETE"], // Các phương thức được phép
+    origin: [
+        "http://127.0.0.1:5500",
+        "http://localhost:5500",
+        "http://127.0.0.1:5501",
+        "http://localhost:5501"
+    ], // Cho phép domain frontend
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"], // Các phương thức được phép
     allowedHeaders: ["Content-Type", "Authorization"], // Header được phép
     credentials: true // Cho phép gửi cookie/token
 }));
