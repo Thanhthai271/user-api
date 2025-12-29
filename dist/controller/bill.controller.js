@@ -12,8 +12,8 @@ const createBill = async (req, res) => {
         const parseCurrency = (val) => {
             return parseFloat(val.replace(/[^0-9]/g, "")) || 0;
         };
-        const roomPrice = parseCurrency(room.price);
-        const deposit = parseCurrency(room.deposit);
+        const roomPrice = parseCurrency((room.price ?? '0.đ'));
+        const deposit = parseCurrency((room.deposit ?? '0.đ'));
         const elecUsage = Math.max(0, Number(newElectric) - Number(oldElectric));
         const totalElecPrice = elecUsage * Number(electricUnit);
         const totalWaterPrice = Number(waterPrice) || 0;

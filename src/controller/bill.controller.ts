@@ -20,8 +20,8 @@ const createBill = async (req: Request, res: Response) => {
             return parseFloat(val.replace(/[^0-9]/g, "")) || 0;
         };
 
-        const roomPrice = parseCurrency(room.price);
-        const deposit = parseCurrency(room.deposit);
+        const roomPrice = parseCurrency((room.price ?? '0.đ') as string);
+        const deposit = parseCurrency((room.deposit ?? '0.đ') as string);
 
         const elecUsage = Math.max(0, Number(newElectric) - Number(oldElectric));
         const totalElecPrice = elecUsage * Number(electricUnit);
@@ -98,7 +98,7 @@ const deleteBill = async (req: Request, res: Response) => {
         const { id } = req.params
         await Bill.findByIdAndDelete(id)
         res.status(200).json({ success: true, message: 'Deleted success' })
-    } catch (error) {
+    } catch (error : any) {
         res.status(500).json({ message: error.message })
     }
 }
