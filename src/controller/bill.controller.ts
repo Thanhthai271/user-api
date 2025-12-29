@@ -72,7 +72,7 @@ const payBill = async (req: Request, res: Response) => {
 
         if (!bill) return res.status(404).json({ message: "Không tìm thấy hóa đơn" });
 
-// Cập nhật lại Room: Reset trạng thái createBill để tháng sau có thể tạo tiếp
+        // Cập nhật lại Room: Reset trạng thái createBill để tháng sau có thể tạo tiếp
         await Room.findOneAndUpdate(
             { roomNum: bill.roomNum },
             { createBill: "" }
@@ -98,8 +98,8 @@ const deleteBill = async (req: Request, res: Response) => {
         const { id } = req.params
         await Bill.findByIdAndDelete(id)
         res.status(200).json({ success: true, message: 'Deleted success' })
-    } catch (error : any) {
-        res.status(500).json({ message: error.message })
+    } catch (error: any) {
+        return res.status(500).json({ message: error.message || "Lỗi xóa hóa đơn" });
     }
 }
 

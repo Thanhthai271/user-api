@@ -75,7 +75,7 @@ const deleteBill = async (req, res) => {
         res.status(200).json({ success: true, message: 'Deleted success' });
     }
     catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: error.message || "Lỗi xóa hóa đơn" });
     }
 };
 exports.deleteBill = deleteBill;
