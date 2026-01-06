@@ -1,0 +1,44 @@
+{
+  "type": "Compass Connections",
+  "version": {
+    "$numberInt": "1"
+  },
+  "connections": [
+    {
+      "id": "09bb0ae8-13e8-455e-b337-f74c143dff14",
+      "lastUsed": {
+        "$date": {
+          "$numberLong": "1767667565719"
+        }
+      },
+      "favorite": {
+        "name": "127.0.0.1:27017\n"
+      },
+      "savedConnectionType": "recent",
+      "connectionOptions": {
+        "connectionString": "mongodb://127.0.0.1:27017\n/",
+        "oidc": {
+          "serializedState": "eyJvaWRjUGx1Z2luU3RhdGVWZXJzaW9uIjoxLCJzdGF0ZSI6W119"
+        }
+      }
+    },
+    {
+      "id": "26388318-6ce6-48c7-b01f-7450c1f4d6d8",
+      "lastUsed": {
+        "$date": {
+          "$numberLong": "1767667273578"
+        }
+      },
+      "favorite": {
+        "name": "lovingboardinghouse.gzwonkh.mongodb.net"
+      },
+      "savedConnectionType": "recent",
+      "connectionOptions": {
+        "connectionString": "mongodb+srv://thanhthai2712002_db_user:27012002Tt@lovingboardinghouse.gzwonkh.mongodb.net/?appName=LovingBoardingHouse",
+        "oidc": {
+          "serializedState": "eyJvaWRjUGx1Z2luU3RhdGVWZXJzaW9uIjoxLCJzdGF0ZSI6W119"
+        }
+      }
+    }
+  ]
+}
