@@ -3,6 +3,7 @@ import routes from "./routes";
 import { connectDB } from "./config/db";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import path from 'path';
 
 const app = express();
 
@@ -27,5 +28,12 @@ app.use((req, res, next) => {
 });
 app.use("/api", routes);
 connectDB();
+
+app.use(express.static(path.join(__dirname, '../frontend')));
+
+// 2. Định nghĩa route gốc để trả về file login.html khi truy cập "/"
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/html/login.html'));
+});
 
 export default app;
