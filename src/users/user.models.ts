@@ -9,7 +9,9 @@ const userSchema = new mongoose.Schema(
     room: { type: String, required: true }
   },
 
-  { timestamps: true }
+  { timestamps: true,
+    collection: 'User'
+   }
 
 );
 
