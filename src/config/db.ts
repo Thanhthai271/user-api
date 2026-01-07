@@ -14,18 +14,20 @@ import dotenv from "dotenv"
 
 
 
-// Tắt buffering: Nếu không kết nối được sẽ báo lỗi ngay, không đợi (giúp tránh lỗi 500 của Vercel)
+// 1. Tắt bufferCommands để bắt lỗi ngay lập tức nếu mất kết nối
 mongoose.set('bufferCommands', false);
 
 export const connectDB = async () => {
-    // Kiểm tra nếu đã kết nối rồi thì không kết nối lại
+    // 2. Nếu đã kết nối rồi thì không kết nối lại
     if (mongoose.connection.readyState >= 1) return;
 
     try {
+        // 3. Đợi cho đến khi kết nối thành công mới cho phép code chạy tiếp
         await mongoose.connect(process.env.DB_URL as string);
-        console.log("MongoDB đã kết nối thành công");
-    } catch (error: any) {
-        console.error("LỖI KẾT NỐI DB CHI TIẾT:", error.message);
-        // In ra mã lỗi để biết là sai pass (AuthFailed) hay sai địa chỉ
+        console.log("✅ MongoDB đã kết nối thành công");
+    } catch (error) {
+        console.error("❌ Lỗi kết nối MongoDB:", error);
+        // Quan trọng: Ném lỗi ra ngoài để Vercel biết và thử lại (retry)
+        throw error; 
     }
 };
