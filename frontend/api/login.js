@@ -1,5 +1,5 @@
 // import BaseURL from './route.js'
-const BaseURL = "http://localhost:5000/api/users";
+const BaseURL = "/api/users";
 async function login() {
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
