@@ -22,10 +22,7 @@ export const connectDB = async () => {
     if (mongoose.connection.readyState >= 1) return;
 
     try {
-        await mongoose.connect(process.env.DB_URL as string, {
-            // Chỉ đợi tối đa 5 giây để tìm server DB
-            serverSelectionTimeoutMS: 5000,
-        });
+        await mongoose.connect(process.env.DB_URL as string);
         console.log("MongoDB đã kết nối thành công");
     } catch (error: any) {
         console.error("LỖI KẾT NỐI DB CHI TIẾT:", error.message);
