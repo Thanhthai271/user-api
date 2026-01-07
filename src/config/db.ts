@@ -12,16 +12,23 @@ import dotenv from "dotenv"
 //     }
 // };
 
-export const connectDB = async () => {   
-    const url = process.env.DB_URL;
-    if (!url || !url.startsWith("mongodb")) {
-        console.error("URI sai định dạng:", url);
-        return;
-    }
+
+
+// Tắt buffering: Nếu không kết nối được sẽ báo lỗi ngay, không đợi (giúp tránh lỗi 500 của Vercel)
+mongoose.set('bufferCommands', false); 
+
+export const connectDB = async () => {
+    // Kiểm tra nếu đã kết nối rồi thì không kết nối lại
+    if (mongoose.connection.readyState >= 1) return;
+
     try {
-        await mongoose.connect(url);
-        console.log("MongoDB Connected Successfully");
-    } catch (err : any ) {
-        console.error("Lỗi kết nối thực tế:", err.message);
+        await mongoose.connect(process.env.DB_URL as string, {
+            // Chỉ đợi tối đa 5 giây để tìm server DB
+            serverSelectionTimeoutMS: 5000, 
+        });
+        console.log("MongoDB đã kết nối thành công");
+    } catch (error) {
+        console.error("Lỗi kết nối MongoDB:", error);
+        // Không throw lỗi ở đây để tránh crash app, hoặc xử lý tùy logic của bạn
     }
 };
