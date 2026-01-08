@@ -60,8 +60,14 @@ body {
 }
 
 .tab-btn.active, .tab-btn:hover {
-    background: #00ffcc;
+    background: #083c31;
     color: #000;
+}
+
+.stat-card.active {
+    background: rgba(0, 184, 148, 0.4);
+    border-color: rgba(0, 255, 204, 0.5);
+    box-shadow: 0 10px 25px rgba(0, 255, 204, 0.2);
 }
 
 .tab-content {

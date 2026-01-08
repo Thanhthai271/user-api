@@ -165,6 +165,7 @@ const deleteBillService = async (billId) => {
 
 window.switchTab = (tabName) => {
     selectors.navItems.forEach(item => item.classList.remove('active'));
+    selectors.statBody.forEach(item => item.classList.remove('active'))
 
     if (tabName === 'bills') {
         selectors.billSection.style.display = 'block'
@@ -201,7 +202,31 @@ window.switchTab = (tabName) => {
         selectors.imgSection.style.display = 'none'
         selectors.billSection.style.display = 'none'
         selectors.statSection.style.display = 'flex'
-        if(selectors.statBody[0]) selectors.statBody[0].classList.add('active')
+        if (selectors.statBody[0]) selectors.statBody[0].classList.add('active')
+    } else if (tabName === 'deposit') {
+        selectors.contractSection.style.display = 'none'
+        selectors.reportSection.style.display = 'none'
+        selectors.dashboardSection.style.display = 'none'
+        selectors.imgSection.style.display = 'none'
+        selectors.billSection.style.display = 'none'
+        selectors.statSection.style.display = 'flex'
+        if (selectors.statBody[1]) selectors.statBody[1].classList.add('active')
+    } else if (tabName === 'contact') {
+        selectors.contractSection.style.display = 'none'
+        selectors.reportSection.style.display = 'none'
+        selectors.dashboardSection.style.display = 'none'
+        selectors.imgSection.style.display = 'none'
+        selectors.billSection.style.display = 'none'
+        selectors.statSection.style.display = 'flex'
+        if (selectors.statBody[2]) selectors.statBody[2].classList.add('active')
+    } else if (tabName === 'problem') {
+        selectors.contractSection.style.display = 'none'
+        selectors.reportSection.style.display = 'none'
+        selectors.dashboardSection.style.display = 'none'
+        selectors.imgSection.style.display = 'none'
+        selectors.billSection.style.display = 'none'
+        selectors.statSection.style.display = 'flex'
+        if(selectors.statBody[3]) selectors.statBody[3].classList.add('active')
     }
 
     else {
@@ -582,9 +607,12 @@ document.addEventListener('DOMContentLoaded', () => {
         selectors.imgBody[1].onclick = () => selectors.imgBody[1].style.display = 'none'
         selectors.imgBody[2].onclick = () => selectors.imgBody[2].style.display = 'none'
     }
-    
+
     if (selectors.statBody.length > 0) {
         selectors.statBody[0].onclick = () => window.switchTab('contract')
+        selectors.statBody[1].onclick = () => window.switchTab('deposit')
+        selectors.statBody[2].onclick = () => window.switchTab('contact')
+        selectors.statBody[3].onclick = () => window.switchTab('problem')
     }
 
     let timeout;
