@@ -4,9 +4,12 @@ import jwt from "jsonwebtoken"
 import { SECRET_KEY, SECRET_KEY_REFRESH } from "../utils/jwt";
 import { Types } from "mongoose";
 import { RefreshToken } from "../users/user.refreshToken";
+import { connectDB } from "../config/db";
 
 const login = async (req: Request, res: Response) => {
     try {
+
+        await connectDB();
         const { username, password } = req.body;
         const user = await User.findOne({ username, password });
 
