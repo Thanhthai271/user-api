@@ -13,31 +13,48 @@ import dotenv from "dotenv"
 // };
 
 // Biến cache để lưu kết nối, tránh kết nối lại nhiều lần trên Vercel
-let isConnected = false;
+
+const MONGODB_URI = process.env.DB_URL;
+
+if (!MONGODB_URI) {
+  throw new Error('Vui lòng kiểm tra lại biến DB_URL trong Environment Variables trên Vercel.');
+}
+
+/** * Sử dụng biến global để duy trì kết nối qua các lần gọi hàm (Serverless)
+ * Tránh lỗi "Operation buffering timed out"
+ */
+let cached = (global as any).mongoose;
+
+if (!cached) {
+  cached = (global as any).mongoose = { conn: null, promise: null };
+}
 
 export const connectDB = async () => {
-  mongoose.set("strictQuery", true);
+  // 1. Nếu đã có kết nối, dùng lại luôn (không tạo mới)
+  if (cached.conn) {
+    return cached.conn;
+  }
 
-  if (isConnected) {
-    console.log("=> Sử dụng kết nối database có sẵn");
-    return;
+  // 2. Nếu chưa có kết nối, tạo một lời hứa (promise) kết nối
+  if (!cached.promise) {
+    const opts = {
+      bufferCommands: true, // Cho phép đợi nếu db chưa sẵn sàng
+      dbName: "test",       // Khớp với database "test" trên Atlas của bạn
+    };
+
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+      console.log("✅ Kết nối MongoDB thành công");
+      return mongoose;
+    });
   }
 
   try {
-    console.log("=> Đang tạo kết nối mới tới MongoDB...");
-    
-    // Đảm bảo DB_URL đã chính xác từ biến môi trường
-    const db = await mongoose.connect(process.env.DB_URL as string, {
-      dbName: "test", // Ghi rõ tên database là "test" như trong url của bạn
-      serverSelectionTimeoutMS: 5000, // Timeout sau 5s nếu không thấy DB
-      socketTimeoutMS: 45000,
-    });
-
-    isConnected = true;
-    console.log("=> MongoDB đã kết nối thành công!");
-  } catch (error) {
-    console.error("=> Lỗi kết nối MongoDB:", error);
-    // Quan trọng: Ném lỗi để Server biết và dừng lại
-    throw error;
+    cached.conn = await cached.promise;
+  } catch (e) {
+    cached.promise = null;
+    console.error("❌ Lỗi kết nối MongoDB:", e);
+    throw e;
   }
+
+  return cached.conn;
 };
