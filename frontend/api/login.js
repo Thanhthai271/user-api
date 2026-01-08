@@ -1,5 +1,5 @@
-// import BaseURL from './route.js'
-const BaseURL = "/api/users";
+import BaseURL from './route.js'
+// const BaseURL = "/api/users";
 async function login() {
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
@@ -36,6 +36,7 @@ async function login() {
         }
 
     } catch (err) {
+        console.log(err)
         console.error(err);
         alert("Lỗi đăng nhập");
     }
