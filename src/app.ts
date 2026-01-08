@@ -22,9 +22,14 @@ app.use(cors({
 
 app.use(cookieParser());
 app.use(express.json());
-app.use((req, res, next) => {
-  console.log("Request:", req.method, req.originalUrl);
-  next();
+app.use(async (req, res, next) => {
+  try {
+    await connectDB(); // Gọi kết nối ở đây
+    next(); // Kết nối xong mới cho đi tiếp
+  } catch (error) {
+    console.error("Lỗi kết nối DB từ Middleware:", error);
+    res.status(500).json({ message: "Lỗi kết nối cơ sở dữ liệu" });
+  }
 });
 app.use("/api", routes);
 connectDB();
